@@ -5,7 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 /**
- * User: Shinyclef
+ * Author: Shinyclef
  * Date: 12/07/13
  * Time: 1:10 AM
  */

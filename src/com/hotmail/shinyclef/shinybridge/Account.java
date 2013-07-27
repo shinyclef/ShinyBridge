@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * User: Shinyclef
+ * Author: Shinyclef
  * Date: 13/07/13
  * Time: 4:23 AM
  */

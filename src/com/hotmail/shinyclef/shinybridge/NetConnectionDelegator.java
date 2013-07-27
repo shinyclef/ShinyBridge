@@ -4,17 +4,18 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- * User: Shinyclef
+ * Author: Shinyclef
  * Date: 12/07/13
  * Time: 1:53 AM
+ * Description: Receives connection requests from clients and creates ClientConnection objects using the sockets.
  */
 
-public class NetConnDelegator implements Runnable
+public class NetConnectionDelegator implements Runnable
 {
     private ServerSocket serverSocket;
     private boolean isListening = true;
 
-    public NetConnDelegator(ServerSocket serverSocket)
+    public NetConnectionDelegator(ServerSocket serverSocket)
     {
         this.serverSocket = serverSocket;
     }
@@ -31,8 +32,9 @@ public class NetConnDelegator implements Runnable
         {
             while (isListening)
             {
-                NetClientChannel s = new NetClientChannel(serverSocket.accept());
-                new Thread(s).start();
+                NetClientConnection s = new NetClientConnection(serverSocket.accept());
+                s.startThreads();
+                ShinyBridge.log("Received connection.");
             }
         }
         catch (IOException ex)

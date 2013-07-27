@@ -8,7 +8,7 @@ import java.net.ServerSocket;
 import java.util.logging.Logger;
 
 /**
- * User: Shinyclef
+ * Author: Shinyclef
  * Date: 12/07/13
  * Time: 12:14 AM
  */
@@ -17,7 +17,7 @@ public class ShinyBridge extends JavaPlugin
 {
     private static ShinyBridge plugin;
     private static Logger log;
-    private NetConnDelegator netConnDelegator;
+    private NetConnectionDelegator netConnectionDelegator;
 
     @Override
     public void onEnable()
@@ -42,8 +42,8 @@ public class ShinyBridge extends JavaPlugin
         try
         {
             serverSocket = new ServerSocket(port);
-            netConnDelegator = new NetConnDelegator(serverSocket);
-            new Thread(netConnDelegator).start();
+            netConnectionDelegator = new NetConnectionDelegator(serverSocket);
+            new Thread(netConnectionDelegator).start();
             this.getLogger().info("Thread started");
         }
         catch (IOException e)
