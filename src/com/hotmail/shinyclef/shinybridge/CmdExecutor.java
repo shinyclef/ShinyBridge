@@ -24,7 +24,20 @@ public class CmdExecutor implements CommandExecutor
     {
         if (command.getName().equalsIgnoreCase("bridge"))
         {
-
+            for (NetClientConnection client : NetClientConnection.getClientMap().values())
+            {
+                try
+                {
+                    client.getOutQueue().put("Testing command 'bridge'");
+                    commandSender.sendMessage("Command 'bridge' executed. Clients: " + client.getOutQueue().size());
+                    return true;
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                    return true;
+                }
+            }
         }
 
         return false;

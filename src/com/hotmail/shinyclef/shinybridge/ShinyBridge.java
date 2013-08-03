@@ -25,6 +25,7 @@ public class ShinyBridge extends JavaPlugin
         plugin = this;
         log = this.getLogger();
         CmdExecutor cmdExecutor = new CmdExecutor();
+        getCommand("bridge").setExecutor(cmdExecutor);
         initializeConnDelegator();
     }
 

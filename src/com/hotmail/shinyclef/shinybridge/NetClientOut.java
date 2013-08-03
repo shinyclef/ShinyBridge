@@ -33,7 +33,7 @@ public class NetClientOut implements Runnable
             String msgOut = "";
 
             //read outPut queue
-            while (!msgOut.startsWith("*QUIT"));
+            while (!msgOut.startsWith("*QUIT"))
             {
                 msgOut = outQueue.take();
                 outToClient.println(msgOut);
