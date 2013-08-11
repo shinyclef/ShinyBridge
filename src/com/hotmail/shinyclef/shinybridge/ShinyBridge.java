@@ -1,7 +1,8 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,11 +23,29 @@ public class ShinyBridge extends JavaPlugin
     @Override
     public void onEnable()
     {
+        //assign variables
         plugin = this;
         log = this.getLogger();
-        CmdExecutor cmdExecutor = new CmdExecutor();
-        getCommand("bridge").setExecutor(cmdExecutor);
+
+        //command executor and event listener
+        new EventListener(this);
+        CommandExecutor cmdExecutor = new CmdExecutor();
+        getCommand("rolydplus").setExecutor(cmdExecutor);
+
+        //make sure config exists
+        saveDefaultConfig();
+
+        //initialization components
+        Database.prepareConnection(this);
+        new Database.onPluginLoad().runTaskAsynchronously(plugin);
+        MCServer.initialize(this);
         initializeConnDelegator();
+
+        //add all online players to the chatTagMap
+        for (Player player : getServer().getOnlinePlayers())
+        {
+            MCServer.addToChatTagMap(player);
+        }
     }
 
     @Override
@@ -37,7 +56,7 @@ public class ShinyBridge extends JavaPlugin
 
     private void initializeConnDelegator()
     {
-        int port = plugin.getConfig().getInt("ServerSettings.Port");
+        int port = plugin.getConfig().getInt("Server.Port");
         ServerSocket serverSocket;
 
         try
@@ -54,29 +73,8 @@ public class ShinyBridge extends JavaPlugin
         }
     }
 
-    public static void log(String msg)
-    {
-        new LogMessage(msg).runTask(plugin);
-    }
-
     public static ShinyBridge getPlugin()
     {
         return plugin;
-    }
-
-    private static class LogMessage extends BukkitRunnable
-    {
-        private String msg;
-
-        private LogMessage(String msg)
-        {
-            this.msg = msg;
-        }
-
-        @Override
-        public void run()
-        {
-            log.info(msg);
-        }
     }
 }

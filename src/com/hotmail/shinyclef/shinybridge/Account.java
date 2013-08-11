@@ -1,6 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,22 +12,53 @@ import java.util.Map;
 
 public class Account
 {
-    private static Map<String, Account> accountMap;
+    private static Map<String, Account> accountMap = new HashMap<String, Account>();
 
     private final String userName;
-    private int pin;
+    private String passwordHash;
     private Rank rank;
-    private Date lastLogin;
 
-    public Account(String userName, int pin, Rank rank)
+    private Date lastLogin;
+    private Integer connectionID;
+
+    public Account(String userName, String passwordHash, Rank rank)
     {
         this.userName = userName;
-        this.pin = pin;
+        this.passwordHash = passwordHash;
+        this.rank = rank;
+        lastLogin = null;
+        connectionID = null;
+    }
+
+    public enum Rank
+    {
+        STANDARD, VIP, EXPERT, MOD, GM
+    }
+
+    public void setPasswordHash(String newPasswordHash)
+    {
+        passwordHash = newPasswordHash;
+    }
+
+    public void setRank(Rank rank)
+    {
         this.rank = rank;
     }
 
-    private enum Rank
+    /* ---------- Getters ---------- */
+
+    public static Map<String, Account> getAccountMap()
     {
-        STANDARD, VIP, EXPERT, MOD, GM
+        return accountMap;
+    }
+
+    public String getPasswordHash()
+    {
+        return passwordHash;
+    }
+
+    public Rank getRank()
+    {
+        return rank;
     }
 }

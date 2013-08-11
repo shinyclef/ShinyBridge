@@ -46,7 +46,6 @@ public class NetClientConnection
     {
         new Thread(clientIn).start();
         new Thread(clientOut).start();
-        ShinyBridge.log("Started in/out threads.");
     }
 
     /* Getters */

@@ -1,8 +1,8 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.Server;
+import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -17,8 +17,9 @@ public class NetProtocol
     private static ShinyBridge plugin = ShinyBridge.getPlugin();
     private static Logger log = plugin.getLogger();
     private static Server server = plugin.getServer();
-    private static Map<Integer, NetClientConnection> clientMap = NetClientConnection.getClientMap();
+    protected static Map<Integer, NetClientConnection> clientMap = NetClientConnection.getClientMap();
 
+    /* Processes raw input as received from clients, identifying work type and delegating to appropriate method. */
     public static synchronized void processInput(String input, int clientID)
     {
         if (clientMap == null)
@@ -30,7 +31,7 @@ public class NetProtocol
         //check if it's a command or a chat message
         if (!input.startsWith("*"))
         {
-            processChatMessage(input, clientID);
+            processClientChat(input, clientID);
         }
         else
         {
@@ -50,30 +51,18 @@ public class NetProtocol
         }
     }
 
-    private static void processChatMessage(String input, int clientID)
+    /* Processes chat data as sent from clients, broadcasting to server and all clients. */
+    private static void processClientChat(String input, int clientID)
     {
         String userName = clientID + "";
         String fullChatTag = "<" + clientID + "> ";
-
-
-        for (NetClientConnection client : NetClientConnection.getClientMap().values())
-        {
-            try
-            {
-                //send out to all clients
-                client.getOutQueue().put("Sender " + clientID + ": " + input);
-            }
-            catch (InterruptedException e)
-            {
-                log.info("Error processing chat message: " + e.getMessage());
-            }
-        }
 
         //broadcast chat in game
         server.broadcastMessage(fullChatTag + input);
 
     }
 
+    /* Processes command data as send from clients. */
     private static void processCommand(String input, int clientID)
     {
         if (input.length() < 2)
@@ -91,4 +80,29 @@ public class NetProtocol
     }
 
 
+    // -------------------- Server-Originated -------------------- //
+
+    /* Processes server chat, broadcasting to all chat clients */
+    public static synchronized void processServerChat(String msg, Player player)
+    {
+        //get the full chat tag of the player
+        String chatTag = MCServer.getChatTagMap().get(player.getName());
+
+        //add the message
+        String chatLine = chatTag + msg;
+
+        //broadcast the message to all clients
+        try
+        {
+            for (NetClientConnection client : NetClientConnection.getClientMap().values())
+            {
+                client.getOutQueue().put(chatLine);
+            }
+        }
+        catch (InterruptedException e)
+        {
+            //dunno what to do with this
+            plugin.getServer().broadcastMessage("Interrupted Exception");
+        }
+    }
 }

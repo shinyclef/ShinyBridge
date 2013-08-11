@@ -1,2 +1,8 @@
-ServerSettings:
+Server:
   Port: 4444
+Database:
+  User: username
+  Password: password
+  DatabaseName: dbname
+  Port: 9999
+  Hostname: rolyd.com

@@ -34,7 +34,7 @@ public class NetConnectionDelegator implements Runnable
             {
                 NetClientConnection s = new NetClientConnection(serverSocket.accept());
                 s.startThreads();
-                ShinyBridge.log("Received connection.");
+                MCServer.log("Connection established.");
             }
         }
         catch (IOException ex)
