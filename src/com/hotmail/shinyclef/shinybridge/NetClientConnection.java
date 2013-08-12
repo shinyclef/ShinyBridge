@@ -24,6 +24,7 @@ public class NetClientConnection
     private BlockingQueue<String> outQueue;
     private final NetClientIn clientIn;
     private final NetClientOut clientOut;
+    private Account account;
 
     /* Constructor */
     public NetClientConnection(Socket socket)
@@ -35,9 +36,13 @@ public class NetClientConnection
         outQueue = new ArrayBlockingQueue<String>(50);
         clientIn = new NetClientIn(this);
         clientOut = new NetClientOut(this);
+        account = null;
 
         //store client in map
         clientMap.put(clientID, this);
+
+        //announce
+        MCServer.log("Connection established: " + socket.getRemoteSocketAddress());
     }
 
     /* This must happen after the constructor finishes so the object can finish
@@ -46,6 +51,13 @@ public class NetClientConnection
     {
         new Thread(clientIn).start();
         new Thread(clientOut).start();
+    }
+
+    /* Setters */
+
+    public void setAccount(Account account)
+    {
+        this.account = account;
     }
 
     /* Getters */
@@ -62,6 +74,11 @@ public class NetClientConnection
     public int getClientID()
     {
         return clientID;
+    }
+
+    public Account getAccount()
+    {
+        return account;
     }
 
     public BlockingQueue<String> getOutQueue()

@@ -1,6 +1,5 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +30,7 @@ public class EventListener implements Listener
     public void playerLogin(PlayerLoginEvent e)
     {
         //construct player chat tag and add to map
-        MCServer.addToChatTagMap(e.getPlayer());
+        MCServer.addToPlayerChatTagMap(e.getPlayer());
 
         //reset rank if player has an account
         String playerName = e.getPlayer().getName();
@@ -46,7 +45,7 @@ public class EventListener implements Listener
     public void playerQuit(PlayerQuitEvent e)
     {
         //remove player from chatTagMap
-        MCServer.removeFromChatTagMap(e.getPlayer());
+        MCServer.removeFromPlayerChatTagMap(e.getPlayer());
     }
 
     @EventHandler
@@ -54,14 +53,15 @@ public class EventListener implements Listener
     {
         //cancel early for any commands that don't start with /rolydplus register
         final String message = e.getMessage().trim();
-        if (!message.toLowerCase().startsWith("/rolydplus register") &&
-                !message.toLowerCase().startsWith("/rolydplus changepassword"))
+        String lcMessage = message.toLowerCase();
+
+        //filter command and aliases
+        if (!lcMessage.startsWith("/rolydplus") || !lcMessage.startsWith("/r+") || !lcMessage.startsWith("/rplus"))
         {
             return;
         }
 
-        //setup sender and string for args
-        CommandSender sender = e.getPlayer();
+        //setup args string
         String argsString;
         if (message.contains(" "))
         {
@@ -71,6 +71,16 @@ public class EventListener implements Listener
         {
             argsString = "";
         }
+
+        //return if we don't want the sub-command
+        if (!argsString.toLowerCase().startsWith("register") ||
+                !argsString.toLowerCase().startsWith("changepassword"))
+        {
+            return;
+        }
+
+        //setup sender
+        CommandSender sender = e.getPlayer();
 
         //convert the args string to args array
         String [] args;

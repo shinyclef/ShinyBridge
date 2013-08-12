@@ -42,11 +42,8 @@ public class AccountPassword
     * @param   password        the password to check
     * @param   correctHash     the hash of the valid password
     * @return                  true if the password is correct, false if not */
-    public static boolean validatePassword(String password, String correctHash)
+    public static boolean validatePassword(char[] password, String correctHash)
     {
-        //get character array
-        char[] charPassword = password.toCharArray();
-
         //decode the hash into its parameters
         String[] params = correctHash.split(":");
         int iterations = Integer.parseInt(params[0]);
@@ -57,7 +54,7 @@ public class AccountPassword
         try
         {
             //compute the hash of the provided password, using the same salt, iteration count, and hash length
-            PBEKeySpec spec = new PBEKeySpec(charPassword, salt, iterations, hash.length * 8);
+            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, hash.length * 8);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             testHash = skf.generateSecret(spec).getEncoded();
         }
@@ -67,6 +64,14 @@ public class AccountPassword
         //compare the hashes and return. true = match
         return Arrays.equals(hash, testHash);
     }
+
+    /* String override of method above. */
+    public static boolean validatePassword(String password, String correctHash)
+    {
+        char[] charPassword = password.toCharArray();
+        return validatePassword(charPassword, correctHash);
+    }
+
 
     /* Creates a hash string used which contains ITERATIONS, salt and hash for storage in database. */
     public static String generateHash(String password)

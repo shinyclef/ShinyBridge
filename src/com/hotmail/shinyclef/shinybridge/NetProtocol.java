@@ -14,10 +14,27 @@ import java.util.logging.Logger;
 
 public class NetProtocol
 {
-    private static ShinyBridge plugin = ShinyBridge.getPlugin();
-    private static Logger log = plugin.getLogger();
-    private static Server server = plugin.getServer();
+    public static final String QUIT_MESSAGE = "@QUIT";
+
+    private static ShinyBridge p = ShinyBridge.getPlugin();
+    private static Server s = p.getServer();
+    private static Logger log = p.getLogger();
     protected static Map<Integer, NetClientConnection> clientMap = NetClientConnection.getClientMap();
+
+    /* Sends output to the specified client. */
+    protected static synchronized void sendToClient(int clientID, String output)
+    {
+        try
+        {
+            NetClientConnection.getClientMap().get(clientID).getOutQueue().put(output);
+        }
+        catch (InterruptedException e)
+        {
+
+        }
+    }
+
+    // -------------------- Client-Originated -------------------- //
 
     /* Processes raw input as received from clients, identifying work type and delegating to appropriate method. */
     public static synchronized void processInput(String input, int clientID)
@@ -28,54 +45,72 @@ public class NetProtocol
             return;
         }
 
-        //check if it's a command or a chat message
-        if (!input.startsWith("*"))
+        //parse message type
+        if (input.startsWith("@")) //custom command
+        {
+            processCustomCommand(input, clientID);
+        }
+        else if (input.startsWith("/")) //mc command
+        {
+            processMCCommand(input, clientID);
+        }
+        else if (input.startsWith("*"))//chat message
         {
             processClientChat(input, clientID);
-        }
-        else
-        {
-            processCommand(input, clientID);
-        }
-
-        String output = "";
-
-        try
-        {
-            clientMap.get(clientID).getOutQueue().put(output);
-        }
-        catch (InterruptedException e)
-        {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
         }
     }
 
     /* Processes chat data as sent from clients, broadcasting to server and all clients. */
     private static void processClientChat(String input, int clientID)
     {
-        String userName = clientID + "";
-        String fullChatTag = "<" + clientID + "> ";
-
-        //broadcast chat in game
-        server.broadcastMessage(fullChatTag + input);
-
-    }
-
-    /* Processes command data as send from clients. */
-    private static void processCommand(String input, int clientID)
-    {
         if (input.length() < 2)
         {
-            //invalid command code goes here
-
             return;
         }
 
-        //remove the '*' from the string
-        String command = input.substring(1);
+        //get the account
+        Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
 
-        //do stuff with commands
+        //remove first character
+        String message = input.substring(1);
+
+        String userName = account.getUserName();
+        String fullChatTag = account.getChatTag();
+        String chatLine = fullChatTag + message;
+
+        //send chat to server and all clients
+        NetProtocolHelper.broadcastChat(chatLine, true);
+    }
+
+    /* Processes command data as send from clients. */
+    private static void processCustomCommand(String input, int clientID)
+    {
+        if (input.length() < 3)
+        {
+            return;
+        }
+
+        //remove first character and get args
+        String command = input.substring(1);
+        String[] args = command.split(":");
+
+        if (args[0].equals("Login"))
+        {
+            NetProtocolHelper.loginRequest(clientID, args);
+        }
+    }
+
+    /* Processes command data as send from clients. */
+    private static void processMCCommand(String input, int clientID)
+    {
+        if (input.length() < 3)
+        {
+            return;
+        }
+
+        //remove first character and get args
+        String command = input.substring(1);
+        String[] args = command.split(":");
 
     }
 
@@ -86,23 +121,12 @@ public class NetProtocol
     public static synchronized void processServerChat(String msg, Player player)
     {
         //get the full chat tag of the player
-        String chatTag = MCServer.getChatTagMap().get(player.getName());
+        String chatTag = MCServer.getPlayerChatTagMap().get(player.getName());
 
         //add the message
         String chatLine = chatTag + msg;
 
-        //broadcast the message to all clients
-        try
-        {
-            for (NetClientConnection client : NetClientConnection.getClientMap().values())
-            {
-                client.getOutQueue().put(chatLine);
-            }
-        }
-        catch (InterruptedException e)
-        {
-            //dunno what to do with this
-            plugin.getServer().broadcastMessage("Interrupted Exception");
-        }
+        //add chat marker and broadcast the message to all clients
+        NetProtocolHelper.broadcastChat(chatLine, false);
     }
 }

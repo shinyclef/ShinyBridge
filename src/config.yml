@@ -1,5 +1,5 @@
 Server:
-  Port: 4444
+  Port: 9999
 Database:
   User: username
   Password: password

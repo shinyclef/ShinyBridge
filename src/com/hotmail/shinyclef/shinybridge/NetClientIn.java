@@ -36,7 +36,7 @@ public class NetClientIn implements Runnable
                 msgIn = inFromClient.readLine();
                 NetProtocol.processInput(msgIn, clientID);
             }
-            while (!msgIn.startsWith("*QUIT"));
+            while (!msgIn.startsWith(NetProtocol.QUIT_MESSAGE));
 
             //user disconnected close connection
             inFromClient.close();

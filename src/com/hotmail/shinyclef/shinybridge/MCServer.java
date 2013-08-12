@@ -19,14 +19,14 @@ public class MCServer extends ShinyBridge
     private static ShinyBridge p;
     private static Server s;
     private static Logger log;
-    private static Map<String, String> chatTagMap;
+    private static Map<String, String> playerChatTagMap;
 
     public static void initialize(ShinyBridge thePlugin)
     {
         p = thePlugin;
         s = p.getServer();
         log = p.getLogger();
-        chatTagMap = new HashMap<String, String>();
+        playerChatTagMap = new HashMap<String, String>();
     }
 
     public static synchronized void log(String msg)
@@ -34,43 +34,27 @@ public class MCServer extends ShinyBridge
         log.info(msg);
     }
 
-    public static void addToChatTagMap(Player player)
+    public static void addToPlayerChatTagMap(Player player)
     {
         String playerName = player.getName();
-        String rankTag = "";
-
-        if (player.hasPermission("simpleprefix.admin"))
-        {
-            rankTag = ChatColor.RED + "[GM]";
-        }
-        else if (player.hasPermission("simpleprefix.moderator"))
-        {
-            rankTag = ChatColor.GREEN + "[Mod]";
-        }
-        else if (player.hasPermission("simpleprefix.Exp"))
-        {
-            rankTag = ChatColor.AQUA + "[Exp]";
-        }
-        else if (player.hasPermission("simpleprefix.vip"))
-        {
-            rankTag = ChatColor.DARK_PURPLE + "[VIP]";
-        }
+        Account.Rank rank = getPlayerRank(player);
+        String rankTag = getColouredRankString(rank);
 
         //put it all together
-        String fullChatTag = ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + playerName + "> ";
+        String fullChatTag = ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + " " + playerName + "> ";
 
         //add it to the map
-        chatTagMap.put(playerName, fullChatTag);
+        playerChatTagMap.put(playerName, fullChatTag);
     }
 
-    public static void removeFromChatTagMap(Player player)
+    public static void removeFromPlayerChatTagMap(Player player)
     {
-        if (!chatTagMap.containsKey(player.getName()))
+        if (!playerChatTagMap.containsKey(player.getName()))
         {
             return;
         }
 
-        chatTagMap.remove(player.getName());
+        playerChatTagMap.remove(player.getName());
     }
 
     public static Account.Rank getPlayerRank(Player player)
@@ -100,11 +84,33 @@ public class MCServer extends ShinyBridge
         return rank;
     }
 
+    public static String getColouredRankString(Account.Rank rank)
+    {
+        String rankTag = "";
+        if (rank.equals(Account.Rank.GM))
+        {
+            rankTag = ChatColor.RED + "[GM]";
+        }
+        else if (rank.equals(Account.Rank.MOD))
+        {
+            rankTag = ChatColor.GREEN + "[Mod]";
+        }
+        else if (rank.equals(Account.Rank.EXPERT))
+        {
+            rankTag = ChatColor.AQUA + "[Exp]";
+        }
+        else if (rank.equals(Account.Rank.VIP))
+        {
+            rankTag = ChatColor.DARK_PURPLE + "[VIP]";
+        }
+        return rankTag;
+    }
+
     // ---------- getters ---------- //
 
-    public static Map<String, String> getChatTagMap()
+    public static Map<String, String> getPlayerChatTagMap()
     {
-        return chatTagMap;
+        return playerChatTagMap;
     }
 
 

@@ -44,7 +44,7 @@ public class ShinyBridge extends JavaPlugin
         //add all online players to the chatTagMap
         for (Player player : getServer().getOnlinePlayers())
         {
-            MCServer.addToChatTagMap(player);
+            MCServer.addToPlayerChatTagMap(player);
         }
     }
 
@@ -64,7 +64,6 @@ public class ShinyBridge extends JavaPlugin
             serverSocket = new ServerSocket(port);
             netConnectionDelegator = new NetConnectionDelegator(serverSocket);
             new Thread(netConnectionDelegator).start();
-            this.getLogger().info("Thread started");
         }
         catch (IOException e)
         {
