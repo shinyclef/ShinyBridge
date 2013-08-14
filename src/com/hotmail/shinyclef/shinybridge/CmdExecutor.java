@@ -15,7 +15,10 @@ import org.bukkit.entity.Player;
 
 public class CmdExecutor implements CommandExecutor
 {
+    private static final String noPerm = ChatColor.RED + "You do not have permission to do that.";
+
     private static ShinyBridge plugin;
+
 
     public CmdExecutor()
     {
@@ -226,4 +229,58 @@ public class CmdExecutor implements CommandExecutor
         //replacement log message
         Bukkit.getLogger().info(sender.getName() + " issued server command: /rolydplus changepassword ********");
     }
+
+    private boolean disconnectUser(CommandSender sender, String[] args)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(noPerm);
+            return true;
+        }
+
+        if (args.length != 2)
+        {
+            return false;
+        }
+
+        //get sender name and check if user has an account
+        String userName = args[1];
+        if (!Account.getAccountMap().containsKey(userName))
+        {
+            sender.sendMessage(ChatColor.RED + "That user does not have a RolyDPlus account.");
+            return true;
+        }
+
+        //check if user is logged in and get ClientConnection
+        Integer connectionID = Account.getAccountMap().get(userName).getConnectionID();
+        if (connectionID == null)
+        {
+            sender.sendMessage(ChatColor.RED + "That user is not currently connected to RolyDPlus.");
+            return true;
+        }
+
+
+
+        return true;
+    }
+
+    private boolean lockdown(CommandSender sender, String[] args)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(noPerm);
+            return true;
+        }
+
+        if (args.length != 1)
+        {
+            return false;
+        }
+
+
+
+        return true;
+    }
+
+
 }

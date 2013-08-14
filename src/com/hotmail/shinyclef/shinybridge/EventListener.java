@@ -56,7 +56,7 @@ public class EventListener implements Listener
         String lcMessage = message.toLowerCase();
 
         //filter command and aliases
-        if (!lcMessage.startsWith("/rolydplus") || !lcMessage.startsWith("/r+") || !lcMessage.startsWith("/rplus"))
+        if (!lcMessage.startsWith("/rolydplus") && !lcMessage.startsWith("/r+") && !lcMessage.startsWith("/rplus"))
         {
             return;
         }
@@ -73,7 +73,7 @@ public class EventListener implements Listener
         }
 
         //return if we don't want the sub-command
-        if (!argsString.toLowerCase().startsWith("register") ||
+        if (!argsString.toLowerCase().startsWith("register") &&
                 !argsString.toLowerCase().startsWith("changepassword"))
         {
             return;

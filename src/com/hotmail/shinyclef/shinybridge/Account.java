@@ -71,13 +71,13 @@ public class Account
 
         //set chat tag
         String rankTag = MCServer.getColouredRankString(account.rank);
-        account.setChatTag(ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + " " + username + "> ");
+        account.setChatTag(ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + username + "> ");
 
         //attach account to the connection
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
 
         //broadcast login
-        NetProtocolHelper.broadcastChat(username + ChatColor.YELLOW + " joined RolyDPlus!", true);
+        NetProtocolHelper.broadcastChat(ChatColor.WHITE + username + ChatColor.YELLOW + " joined RolyDPlus!", true);
     }
 
     /* Setters */
@@ -122,5 +122,10 @@ public class Account
     public String getChatTag()
     {
         return chatTag;
+    }
+
+    public Integer getConnectionID()
+    {
+        return connectionID;
     }
 }

@@ -27,13 +27,17 @@ public class NetClientIn implements Runnable
     {
         try
         {
-            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
             String msgIn;
 
             //wait for input and pass it to handler
             do
             {
                 msgIn = inFromClient.readLine();
+                if (msgIn == null)
+                {
+                    break;
+                }
                 NetProtocol.processInput(msgIn, clientID);
             }
             while (!msgIn.startsWith(NetProtocol.QUIT_MESSAGE));
@@ -41,7 +45,6 @@ public class NetClientIn implements Runnable
             //user disconnected close connection
             inFromClient.close();
             socket.close();
-
         }
         catch (IOException e)
         {

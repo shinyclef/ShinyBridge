@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 
 import java.util.logging.Logger;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 
 public class NetProtocolHelper extends NetProtocol
 {
+    private static final String COLOUR_CHAR = String.valueOf('\u00A7');
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
     private static Logger log = p.getLogger();
@@ -48,5 +50,44 @@ public class NetProtocolHelper extends NetProtocol
         boolean isValidLogin = Account.validateLogin(clientID, username, password);
         String loginReply = "@Login:" + isValidLogin;
         sendToClient(clientID, loginReply);
+    }
+
+    public static void clientQuit(int clientID, String[] args)
+    {
+        //check if client is logged in and get account
+        Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
+        boolean wasLoggedIn;
+        String quitMessage;
+
+        if (account != null)
+        {
+            wasLoggedIn = true;
+            String userName = account.getUserName();
+            quitMessage = ChatColor.WHITE + userName + ChatColor.YELLOW + " left RolyDPlus!";
+        }
+        else
+        {
+            wasLoggedIn = false;
+            quitMessage = "Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress();
+        }
+
+        //finish disconnecting client
+        NetClientConnection.getClientMap().get(clientID).disconnectClient();
+
+        //broadcast the message to the appropriate place
+        if (wasLoggedIn)
+        {
+            broadcastChat(quitMessage, true);
+        }
+        else
+        {
+            MCServer.pluginLog(quitMessage);
+        }
+    }
+
+    public static void clientForceQuit(int clientID, String[] args)
+    {
+        //send disconnect message to client
+        NetProtocol.sendToClient(clientID, NetProtocol.QUIT_MESSAGE + ":Forced");
     }
 }

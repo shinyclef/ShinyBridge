@@ -14,7 +14,8 @@ import java.util.logging.Logger;
 
 public class NetProtocol
 {
-    public static final String QUIT_MESSAGE = "@QUIT";
+    public static final String QUIT_MESSAGE = "@Disconnect";
+    public static final String POISON_PILL_OUT = "@PoisonPill";
 
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
@@ -85,7 +86,7 @@ public class NetProtocol
     /* Processes command data as send from clients. */
     private static void processCustomCommand(String input, int clientID)
     {
-        if (input.length() < 3)
+        if (input.length() < 2)
         {
             return;
         }
@@ -97,6 +98,11 @@ public class NetProtocol
         if (args[0].equals("Login"))
         {
             NetProtocolHelper.loginRequest(clientID, args);
+        }
+
+        if (args[0].equals(QUIT_MESSAGE.substring(1)))
+        {
+            NetProtocolHelper.clientQuit(clientID, args);
         }
     }
 

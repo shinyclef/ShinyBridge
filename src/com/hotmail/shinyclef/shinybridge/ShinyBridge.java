@@ -51,7 +51,7 @@ public class ShinyBridge extends JavaPlugin
     @Override
     public void onDisable()
     {
-
+        //send disconnect to all clients
     }
 
     private void initializeConnDelegator()

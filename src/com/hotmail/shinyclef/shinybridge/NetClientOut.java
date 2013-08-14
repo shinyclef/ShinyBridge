@@ -1,9 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 
@@ -29,20 +26,25 @@ public class NetClientOut implements Runnable
     {
         try
         {
-            PrintWriter outToClient = new PrintWriter(socket.getOutputStream(), true);
+            //PrintWriter outToClient = new PrintWriter(socket.getOutputStream(), true);
+            PrintWriter outToClient = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             String msgOut = "";
 
             //read outPut queue
-            while (!msgOut.startsWith("@QUIT"))
+            while (!msgOut.startsWith(NetProtocol.QUIT_MESSAGE))
             {
                 msgOut = outQueue.take();
+                if(msgOut.startsWith(NetProtocol.POISON_PILL_OUT))
+                {
+                    break;
+                }
                 outToClient.println(msgOut);
+                outToClient.flush();
             }
 
-            //user disconnected close connection
+            //disconnected message sent, close connection
             outToClient.close();
             socket.close();
-
         }
         catch (IOException e)
         {

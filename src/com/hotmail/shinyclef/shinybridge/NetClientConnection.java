@@ -21,10 +21,12 @@ public class NetClientConnection
     //object vars
     private final Socket socket;
     private final int clientID;
+    private String ipAddress;
     private BlockingQueue<String> outQueue;
     private final NetClientIn clientIn;
     private final NetClientOut clientOut;
     private Account account;
+    private boolean readyToCloseSockets;
 
     /* Constructor */
     public NetClientConnection(Socket socket)
@@ -33,16 +35,18 @@ public class NetClientConnection
         this.socket = socket;
         latestConnectionID++;
         clientID = latestConnectionID;
+        ipAddress = socket.getRemoteSocketAddress().toString();
         outQueue = new ArrayBlockingQueue<String>(50);
         clientIn = new NetClientIn(this);
         clientOut = new NetClientOut(this);
         account = null;
+        readyToCloseSockets = false;
 
         //store client in map
         clientMap.put(clientID, this);
 
         //announce
-        MCServer.log("Connection established: " + socket.getRemoteSocketAddress());
+        MCServer.pluginLog("Connection established: " + socket.getRemoteSocketAddress());
     }
 
     /* This must happen after the constructor finishes so the object can finish
@@ -53,6 +57,13 @@ public class NetClientConnection
         new Thread(clientOut).start();
     }
 
+    public void disconnectClient()
+    {
+        //shut down clientOut and remove client from map
+        NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT);
+        NetClientConnection.getClientMap().remove(clientID);
+    }
+
     /* Setters */
 
     public void setAccount(Account account)
@@ -60,7 +71,13 @@ public class NetClientConnection
         this.account = account;
     }
 
+    public synchronized void setReadyToCloseSockets(boolean readyToCloseSockets)
+    {
+        this.readyToCloseSockets = readyToCloseSockets;
+    }
+
     /* Getters */
+
     public Socket getSocket()
     {
         return socket;
@@ -76,6 +93,11 @@ public class NetClientConnection
         return clientID;
     }
 
+    public String getIpAddress()
+    {
+        return ipAddress;
+    }
+
     public Account getAccount()
     {
         return account;
@@ -85,4 +107,11 @@ public class NetClientConnection
     {
         return outQueue;
     }
+
+    public synchronized boolean isReadyToCloseSockets()
+    {
+        return readyToCloseSockets;
+    }
+
+
 }

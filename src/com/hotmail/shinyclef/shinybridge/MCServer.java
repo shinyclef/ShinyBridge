@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -18,20 +19,27 @@ public class MCServer extends ShinyBridge
 {
     private static ShinyBridge p;
     private static Server s;
-    private static Logger log;
+    private static Logger bukkitLog;
+    private static Logger pluginLog;
     private static Map<String, String> playerChatTagMap;
 
     public static void initialize(ShinyBridge thePlugin)
     {
         p = thePlugin;
         s = p.getServer();
-        log = p.getLogger();
+        bukkitLog = Bukkit.getLogger();
+        pluginLog = p.getLogger();
         playerChatTagMap = new HashMap<String, String>();
     }
 
-    public static synchronized void log(String msg)
+    public static synchronized void pluginLog(String msg)
     {
-        log.info(msg);
+        bukkitLog.info("R+: " + msg);
+    }
+
+    public static synchronized void bukkitLog(String msg)
+    {
+        pluginLog.info("R+: " + msg);
     }
 
     public static void addToPlayerChatTagMap(Player player)
@@ -41,7 +49,7 @@ public class MCServer extends ShinyBridge
         String rankTag = getColouredRankString(rank);
 
         //put it all together
-        String fullChatTag = ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + " " + playerName + "> ";
+        String fullChatTag = ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + playerName + "> ";
 
         //add it to the map
         playerChatTagMap.put(playerName, fullChatTag);
@@ -61,7 +69,7 @@ public class MCServer extends ShinyBridge
     {
         //get highest rank
         Account.Rank rank;
-        if (player.hasPermission("rolyd.gm"))
+        if (player.hasPermission("rolyd.admin"))
         {
             rank = Account.Rank.GM;
         }
@@ -89,19 +97,19 @@ public class MCServer extends ShinyBridge
         String rankTag = "";
         if (rank.equals(Account.Rank.GM))
         {
-            rankTag = ChatColor.RED + "[GM]";
+            rankTag = ChatColor.RED + "[GM] ";
         }
         else if (rank.equals(Account.Rank.MOD))
         {
-            rankTag = ChatColor.GREEN + "[Mod]";
+            rankTag = ChatColor.GREEN + "[Mod] ";
         }
         else if (rank.equals(Account.Rank.EXPERT))
         {
-            rankTag = ChatColor.AQUA + "[Exp]";
+            rankTag = ChatColor.AQUA + "[Exp] ";
         }
         else if (rank.equals(Account.Rank.VIP))
         {
-            rankTag = ChatColor.DARK_PURPLE + "[VIP]";
+            rankTag = ChatColor.DARK_PURPLE + "[VIP] ";
         }
         return rankTag;
     }
