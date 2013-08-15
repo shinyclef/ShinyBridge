@@ -8,3 +8,6 @@ commands:
         aliases:
         - r+
         - rplus
+    mail:
+        description: Gives access to bridge commands.
+        usage: /<command> help

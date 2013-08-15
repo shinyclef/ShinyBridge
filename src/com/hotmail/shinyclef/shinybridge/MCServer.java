@@ -45,7 +45,7 @@ public class MCServer extends ShinyBridge
     public static void addToPlayerChatTagMap(Player player)
     {
         String playerName = player.getName();
-        Account.Rank rank = getPlayerRank(player);
+        Account.Rank rank = getRank(player);
         String rankTag = getColouredRankString(rank);
 
         //put it all together
@@ -65,7 +65,7 @@ public class MCServer extends ShinyBridge
         playerChatTagMap.remove(player.getName());
     }
 
-    public static Account.Rank getPlayerRank(Player player)
+    public static Account.Rank getRank(Player player)
     {
         //get highest rank
         Account.Rank rank;
@@ -90,6 +90,31 @@ public class MCServer extends ShinyBridge
             rank = Account.Rank.STANDARD;
         }
         return rank;
+    }
+
+    public static Account.Rank getRank(String permission)
+    {
+        String perm = permission.toLowerCase();
+        if (perm.equals("rolyd.admin"))
+        {
+            return Account.Rank.GM;
+        }
+        else if (perm.equals("rolyd.mod"))
+        {
+            return Account.Rank.MOD;
+        }
+        else if (perm.equals("rolyd.exp"))
+        {
+            return Account.Rank.EXPERT;
+        }
+        else if (perm.equals("rolyd.vip"))
+        {
+            return Account.Rank.VIP;
+        }
+        else
+        {
+            return Account.Rank.STANDARD;
+        }
     }
 
     public static String getColouredRankString(Account.Rank rank)

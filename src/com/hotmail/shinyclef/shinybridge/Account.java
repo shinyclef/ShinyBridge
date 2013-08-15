@@ -35,7 +35,19 @@ public class Account
 
     public enum Rank
     {
-        STANDARD, VIP, EXPERT, MOD, GM
+        GM(5), MOD(4), EXPERT(3), VIP(2), STANDARD(1);
+
+        private final int level;
+
+        Rank(int level)
+        {
+            this.level = level;
+        }
+
+        public int getLevel()
+        {
+            return level;
+        }
     }
 
     public static boolean validateLogin(int clientID, String username, String password)
@@ -78,6 +90,11 @@ public class Account
 
         //broadcast login
         NetProtocolHelper.broadcastChat(ChatColor.WHITE + username + ChatColor.YELLOW + " joined RolyDPlus!", true);
+    }
+
+    public boolean hasPermission(Rank requiredRank)
+    {
+        return rank.getLevel() >= requiredRank.getLevel();
     }
 
     /* Setters */

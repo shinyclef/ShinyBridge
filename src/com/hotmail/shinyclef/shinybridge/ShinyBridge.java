@@ -1,11 +1,18 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import org.bukkit.command.CommandExecutor;
+import com.hotmail.shinyclef.shinybase.ShinyBase;
+import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.ServerSocket;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
@@ -17,6 +24,8 @@ import java.util.logging.Logger;
 public class ShinyBridge extends JavaPlugin
 {
     private static ShinyBridge plugin;
+    private static ShinyBridgeAPI shinyBridgeAPI;
+    private static ShinyBaseAPI shinyBaseAPI;
     private static Logger log;
     private NetConnectionDelegator netConnectionDelegator;
 
@@ -26,10 +35,15 @@ public class ShinyBridge extends JavaPlugin
         //assign variables
         plugin = this;
         log = this.getLogger();
+        Plugin base = Bukkit.getPluginManager().getPlugin("ShinyBase");
+        if (base != null)
+        {
+            shinyBaseAPI = ((ShinyBase)base).getShinyBaseAPI();
+        }
 
         //command executor and event listener
         new EventListener(this);
-        CommandExecutor cmdExecutor = new CmdExecutor();
+        final CommandExecutor cmdExecutor = new CmdExecutor();
         getCommand("rolydplus").setExecutor(cmdExecutor);
 
         //make sure config exists
@@ -40,6 +54,7 @@ public class ShinyBridge extends JavaPlugin
         new Database.onPluginLoad().runTaskAsynchronously(plugin);
         MCServer.initialize(this);
         initializeConnDelegator();
+        shinyBridgeAPI = new ShinyBridgeAPI();
 
         //add all online players to the chatTagMap
         for (Player player : getServer().getOnlinePlayers())
@@ -72,8 +87,13 @@ public class ShinyBridge extends JavaPlugin
         }
     }
 
-    public static ShinyBridge getPlugin()
+    public static synchronized ShinyBridge getPlugin()
     {
         return plugin;
+    }
+
+    public ShinyBridgeAPI getShinyBridgeAPI()
+    {
+        return shinyBridgeAPI;
     }
 }

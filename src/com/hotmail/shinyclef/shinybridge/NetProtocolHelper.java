@@ -42,6 +42,45 @@ public class NetProtocolHelper extends NetProtocol
         }
     }
 
+    public static void broadcastChat(String chatLine, String permission, boolean serverBroadcast)
+    {
+        //convert permission to a rank and required level
+        Account.Rank requiredRank = MCServer.getRank(permission);
+
+        //for each client...
+        String clientChat = "*" + chatLine;
+        for (NetClientConnection client : NetClientConnection.getClientMap().values())
+        {
+            //skip them if they are not logged in
+            if (client.getAccount() == null)
+            {
+                continue;
+            }
+
+            //only send if they have the required rank
+            if (client.getAccount().hasPermission(requiredRank))
+            {
+                try
+                {
+                    //send out to client
+                    client.getOutQueue().put(clientChat);
+                }
+                catch (InterruptedException e)
+                {
+                    log.info("Error processing chat message: " + e.getMessage());
+                }
+            }
+
+
+        }
+
+        //broadcast on server if requested (no '*' for server)
+        if(serverBroadcast)
+        {
+            s.broadcastMessage(chatLine);
+        }
+    }
+
     public static void loginRequest(int clientID, String[] args)
     {
         String username = args[1];

@@ -132,7 +132,7 @@ public class CmdExecutor implements CommandExecutor
         password = AccountPassword.generateHash(password);
 
         //get rank
-        Account.Rank rank = MCServer.getPlayerRank((Player)sender);
+        Account.Rank rank = MCServer.getRank((Player) sender);
 
         //create a new Account
         Account account = new Account(username, password, rank);
