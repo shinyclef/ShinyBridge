@@ -1,6 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -20,9 +21,10 @@ public class Account
     private String passwordHash;
     private Rank rank;
     private String chatTag;
+    private CommandSender commandSender;
 
     private Date lastLogin;
-    private Integer connectionID;
+    private Integer assignedClientID;
 
     public Account(String userName, String passwordHash, Rank rank)
     {
@@ -30,7 +32,8 @@ public class Account
         this.passwordHash = passwordHash;
         this.rank = rank;
         lastLogin = null;
-        connectionID = null;
+        assignedClientID = null;
+        assignNewClientCommandSender();
     }
 
     public enum Rank
@@ -90,11 +93,24 @@ public class Account
 
         //broadcast login
         NetProtocolHelper.broadcastChat(ChatColor.WHITE + username + ChatColor.YELLOW + " joined RolyDPlus!", true);
+
+        //assign connection ID
+        account.assignedClientID = clientID;
+    }
+
+    public void logout()
+    {
+        assignedClientID = null;
     }
 
     public boolean hasPermission(Rank requiredRank)
     {
         return rank.getLevel() >= requiredRank.getLevel();
+    }
+
+    public void assignNewClientCommandSender()
+    {
+        this.commandSender = new MCServer.ClientCommandSender(this);
     }
 
     /* Setters */
@@ -136,13 +152,18 @@ public class Account
         return rank;
     }
 
+    public CommandSender getCommandSender()
+    {
+        return commandSender;
+    }
+
     public String getChatTag()
     {
         return chatTag;
     }
 
-    public Integer getConnectionID()
+    public Integer getAssignedClientID()
     {
-        return connectionID;
+        return assignedClientID;
     }
 }

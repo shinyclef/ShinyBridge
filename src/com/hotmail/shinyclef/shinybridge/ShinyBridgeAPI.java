@@ -12,4 +12,9 @@ public class ShinyBridgeAPI
     {
         NetProtocolHelper.broadcastChat(chatLine, permission, serverBroadcast);
     }
+
+    public void sendToClient(String output)
+    {
+
+    }
 }

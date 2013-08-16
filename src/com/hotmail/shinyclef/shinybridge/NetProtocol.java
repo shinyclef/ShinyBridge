@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -109,15 +110,25 @@ public class NetProtocol
     /* Processes command data as send from clients. */
     private static void processMCCommand(String input, int clientID)
     {
-        if (input.length() < 3)
+        if (input.length() < 2)
         {
             return;
         }
 
         //remove first character and get args
-        String command = input.substring(1);
-        String[] args = command.split(":");
+        String commandLine = input.substring(1);
+        String[] args = commandLine.split(" ");
+        String baseCommand = args[0].toLowerCase();
 
+        if (MCServer.getCommandWhiteList().contains(baseCommand))
+        {
+            s.dispatchCommand(NetClientConnection.getClientMap().get(clientID)
+                    .getAccount().getCommandSender(), commandLine);
+        }
+        else
+        {
+            sendToClient(clientID, "*" + ChatColor.RED + "That command is not available from RolyDPlus.");
+        }
     }
 
 

@@ -1,8 +1,14 @@
 Server:
   Port: 9999
+
 Database:
   User: username
   Password: password
   DatabaseName: dbname
   Port: 9999
   Hostname: rolyd.com
+
+CommandWhiteList:
+- mb
+- sb
+- vip

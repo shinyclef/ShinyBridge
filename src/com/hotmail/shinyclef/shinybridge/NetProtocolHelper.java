@@ -70,14 +70,12 @@ public class NetProtocolHelper extends NetProtocol
                     log.info("Error processing chat message: " + e.getMessage());
                 }
             }
-
-
         }
 
         //broadcast on server if requested (no '*' for server)
         if(serverBroadcast)
         {
-            s.broadcastMessage(chatLine);
+            s.broadcast(chatLine, permission);
         }
     }
 
@@ -101,6 +99,7 @@ public class NetProtocolHelper extends NetProtocol
         if (account != null)
         {
             wasLoggedIn = true;
+            account.logout();
             String userName = account.getUserName();
             quitMessage = ChatColor.WHITE + userName + ChatColor.YELLOW + " left RolyDPlus!";
         }

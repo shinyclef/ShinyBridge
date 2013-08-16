@@ -37,30 +37,28 @@ public class CmdExecutor implements CommandExecutor
 
             String subCommand = args[0].toLowerCase();
 
-            if (subCommand.equals("1"))
+            if (subCommand.equals("help"))
             {
-
+                return showHelp(sender, args);
             }
             else if (subCommand.equals("unregister"))
             {
                 return unregister(sender, args);
             }
-            else if (subCommand.equals("testpass"))
-            {
-               if (AccountPassword.validatePassword
-                       (args[1], Account.getAccountMap().get(sender.getName()).getPasswordHash()))
-               {
-                   sender.sendMessage("CORRECT!");
-               }
-               else
-               {
-                   sender.sendMessage("WRONG!");
-               }
-                return true;
-            }
             else if (subCommand.equals("debug"))
             {
+                if (!sender.hasPermission("rolyd.mod"))
+                {
+                    sender.sendMessage(noPerm);
+                    return true;
+                }
                 Database.printDebug(sender);
+                return true;
+            }
+            else if (subCommand.equals("reloadcommandwhitelist"))
+            {
+                MCServer.reloadCommandWhiteList();
+                sender.sendMessage(ChatColor.YELLOW + "Command white list reloaded.");
                 return true;
             }
         }
@@ -252,7 +250,7 @@ public class CmdExecutor implements CommandExecutor
         }
 
         //check if user is logged in and get ClientConnection
-        Integer connectionID = Account.getAccountMap().get(userName).getConnectionID();
+        Integer connectionID = Account.getAccountMap().get(userName).getAssignedClientID();
         if (connectionID == null)
         {
             sender.sendMessage(ChatColor.RED + "That user is not currently connected to RolyDPlus.");
@@ -279,6 +277,28 @@ public class CmdExecutor implements CommandExecutor
 
 
 
+        return true;
+    }
+
+    private boolean showHelp(CommandSender sender, String[] args)
+    {
+        sender.sendMessage(ChatColor.AQUA + "Commands are accessible with /RolyDPlus, /rplus, or /r+. Eg. '/r+ help'.");
+        sender.sendMessage(ChatColor.AQUA + "register [password]" + ChatColor.YELLOW +
+                " - Registers your username for use with RolyDPlus with the given password.");
+        sender.sendMessage(ChatColor.AQUA + "unregister" + ChatColor.YELLOW +
+                " - Removes you RolyDPlus account. You can re-register at any time.");
+        sender.sendMessage(ChatColor.AQUA + "changepassword [password]" + ChatColor.YELLOW +
+                " - Changes your RolyDPlus password to the given password.");
+
+        if (sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(ChatColor.DARK_RED + "Staff Commands:");
+            sender.sendMessage(ChatColor.AQUA + "debug" + ChatColor.YELLOW +
+                    " - Used to check for any errors with database operations. " +
+                    "Check this if you think something is not working.");
+            sender.sendMessage(ChatColor.AQUA + "reloadcommandwhitelist" + ChatColor.YELLOW +
+                    " - Used after the command white list has been altered in the config file.");
+        }
         return true;
     }
 
