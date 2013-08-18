@@ -49,6 +49,7 @@ public class NetClientIn implements Runnable
         catch (SocketException e)
         {
             MCServer.pluginLog("Unexpectedly lost connection: " + address);
+            NetProtocolHelper.clientQuit(clientID, null);
         }
         catch (IOException e)
         {

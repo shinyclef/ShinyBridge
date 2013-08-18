@@ -3,6 +3,7 @@ package com.hotmail.shinyclef.shinybridge;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -17,6 +18,27 @@ public class NetProtocolHelper extends NetProtocol
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
     private static Logger log = p.getLogger();
+
+    public static void broadcastRawToClients(String message, boolean isChat)
+    {
+        for (NetClientConnection client : NetClientConnection.getClientMap().values())
+        {
+            if (isChat)
+            {
+                message = "*" + message;
+            }
+
+            try
+            {
+                //send out to all clients
+                client.getOutQueue().put(message);
+            }
+            catch (InterruptedException e)
+            {
+                log.info("Error processing client broadcast: " + e.getMessage());
+            }
+        }
+    }
 
     public static void broadcastChat(String chatLine, boolean serverBroadcast)
     {
@@ -86,7 +108,26 @@ public class NetProtocolHelper extends NetProtocol
 
         boolean isValidLogin = Account.validateLogin(clientID, username, password);
         String loginReply = "@Login:" + isValidLogin;
-        sendToClient(clientID, loginReply);
+        sendToClient(clientID, loginReply, false);
+    }
+
+    public static void processPlayerListRequest(int clientID)
+    {
+        //Prefix '+' for logged in both, '-' for client only, and no prefix for server only.
+        Set<String> formattedSet = MCServer.getAllOnlinePlayerFormattedNamesSet();
+
+        //build the string
+        String masterList = "";
+        for (String s : formattedSet)
+        {
+            masterList = masterList + s + ",";
+        }
+
+        //remove the last ','
+        masterList = masterList.substring(0, masterList.length() - 1);
+
+        //send it
+        NetProtocol.sendToClient(clientID, "@PlayerList:" +  masterList, false);
     }
 
     public static void clientQuit(int clientID, String[] args)
@@ -94,19 +135,19 @@ public class NetProtocolHelper extends NetProtocol
         //check if client is logged in and get account
         Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
         boolean wasLoggedIn;
-        String quitMessage;
+        String serverQuitMessage;
 
         if (account != null)
         {
             wasLoggedIn = true;
             account.logout();
             String userName = account.getUserName();
-            quitMessage = ChatColor.WHITE + userName + ChatColor.YELLOW + " left RolyDPlus!";
+            serverQuitMessage = ChatColor.WHITE + userName + ChatColor.YELLOW + " left RolyDPlus!";
         }
         else
         {
             wasLoggedIn = false;
-            quitMessage = "Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress();
+            serverQuitMessage = "Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress();
         }
 
         //finish disconnecting client
@@ -115,17 +156,66 @@ public class NetProtocolHelper extends NetProtocol
         //broadcast the message to the appropriate place
         if (wasLoggedIn)
         {
-            broadcastChat(quitMessage, true);
+            MCServer.getPlugin().getServer().broadcastMessage(serverQuitMessage);
+
+            //inform clients
+            broadcastClientQuit(account.getUserName());
         }
         else
         {
-            MCServer.pluginLog(quitMessage);
+            MCServer.pluginLog(serverQuitMessage);
         }
     }
 
     public static void clientForceQuit(int clientID, String[] args)
     {
         //send disconnect message to client
-        NetProtocol.sendToClient(clientID, NetProtocol.QUIT_MESSAGE + ":Forced");
+        NetProtocol.sendToClient(clientID, NetProtocol.QUIT_MESSAGE + ":Forced", false);
+    }
+
+    public static void broadcastServerJoin(String playerName)
+    {
+        //check if they're logged in client
+        String currentPresence = "Server";
+        if (Account.getOnlineAccountsMapLCase().keySet().contains(playerName.toLowerCase()))
+        {
+            currentPresence = "Both";
+        }
+
+        broadcastRawToClients("@" + "ServerJoin:" + playerName + ":" + currentPresence, false);
+
+    }
+
+    public static void broadcastServerQuit(String playerName)
+    {
+        //check if they're logged in client
+        String currentPresence = "None";
+        if (Account.getOnlineAccountsMapLCase().keySet().contains(playerName.toLowerCase()))
+        {
+            currentPresence = "Client";
+        }
+        broadcastRawToClients("@" + "ServerQuit:" + playerName + ":" + currentPresence, false);
+    }
+
+    public static void broadcastClientJoin(String playerName)
+    {
+        //check if they are logged in server
+        String currentPresence = "Client";
+        if (MCServer.isServerOnline(playerName))
+        {
+            currentPresence = "Both";
+        }
+        broadcastRawToClients("@" + "ClientJoin:" + playerName + ":" + currentPresence, false);
+    }
+
+    public static void broadcastClientQuit(String playerName)
+    {
+        //check if they are logged in server
+        String currentPresence = "None";
+        if (MCServer.isServerOnline(playerName))
+        {
+            currentPresence = "Server";
+        }
+        broadcastRawToClients("@" + "ClientQuit:" + playerName + ":" + currentPresence, false);
     }
 }

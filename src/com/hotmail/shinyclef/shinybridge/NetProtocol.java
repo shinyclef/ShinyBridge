@@ -15,8 +15,11 @@ import java.util.logging.Logger;
 
 public class NetProtocol
 {
-    public static final String QUIT_MESSAGE = "@Disconnect";
-    public static final String POISON_PILL_OUT = "@PoisonPill";
+    private static final String CHAT_MARKER = "*";
+    private static final String CUSTOM_COMMAND_MARKER = "@";
+    private static final String MC_COMMAND_MARKER = "/";
+    public static final String QUIT_MESSAGE = CUSTOM_COMMAND_MARKER + "Disconnect";
+    public static final String POISON_PILL_OUT = CUSTOM_COMMAND_MARKER + "PoisonPill";
 
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
@@ -24,15 +27,20 @@ public class NetProtocol
     protected static Map<Integer, NetClientConnection> clientMap = NetClientConnection.getClientMap();
 
     /* Sends output to the specified client. */
-    protected static synchronized void sendToClient(int clientID, String output)
+    protected static synchronized void sendToClient(int clientID, String output, boolean isChat)
     {
+        if (isChat)
+        {
+            output = CHAT_MARKER + output;
+        }
+
         try
         {
             NetClientConnection.getClientMap().get(clientID).getOutQueue().put(output);
         }
         catch (InterruptedException e)
         {
-
+            //nothing to do?
         }
     }
 
@@ -101,10 +109,16 @@ public class NetProtocol
             NetProtocolHelper.loginRequest(clientID, args);
         }
 
-        if (args[0].equals(QUIT_MESSAGE.substring(1)))
+        else if (args[0].equals(QUIT_MESSAGE.substring(1)))
         {
             NetProtocolHelper.clientQuit(clientID, args);
         }
+
+        else if (args[0].equals("RequestPlayerList"))
+        {
+            NetProtocolHelper.processPlayerListRequest(clientID);
+        }
+
     }
 
     /* Processes command data as send from clients. */
@@ -123,11 +137,12 @@ public class NetProtocol
         if (MCServer.getCommandWhiteList().contains(baseCommand))
         {
             s.dispatchCommand(NetClientConnection.getClientMap().get(clientID)
-                    .getAccount().getCommandSender(), commandLine);
+                    .getAccount().getClientPlayer(), commandLine);
+
         }
         else
         {
-            sendToClient(clientID, "*" + ChatColor.RED + "That command is not available from RolyDPlus.");
+            sendToClient(clientID, ChatColor.RED + "That command is not available from RolyDPlus.", true);
         }
     }
 

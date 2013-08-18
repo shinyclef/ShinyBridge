@@ -60,7 +60,7 @@ public class NetClientConnection
     public void disconnectClient()
     {
         //shut down clientOut and remove client from map
-        NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT);
+        NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
         NetClientConnection.getClientMap().remove(clientID);
     }
 

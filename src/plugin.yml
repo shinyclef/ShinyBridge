@@ -1,6 +1,6 @@
 name: ShinyBridge
 main: com.hotmail.shinyclef.shinybridge.ShinyBridge
-version: 0.0.1
+version: 0.0.4
 commands:
     rolydplus:
         description: Gives access to bridge commands.
@@ -8,6 +8,3 @@ commands:
         aliases:
         - r+
         - rplus
-    mail:
-        description: Gives access to bridge commands.
-        usage: /<command> help

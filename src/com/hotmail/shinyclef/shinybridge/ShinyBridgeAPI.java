@@ -1,5 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import org.bukkit.Server;
+
 /**
  * Author: Shinyclef
  * Date: 15/08/13
@@ -8,13 +10,25 @@ package com.hotmail.shinyclef.shinybridge;
 
 public class ShinyBridgeAPI
 {
+    private static Server server = ShinyBridge.getPlugin().getServer();
+
     public void broadcastMessage(String chatLine, String permission, boolean serverBroadcast)
     {
         NetProtocolHelper.broadcastChat(chatLine, permission, serverBroadcast);
     }
 
-    public void sendToClient(String output)
+    public void sendToClient(String playerName, String message)
     {
+        if (Account.getOnlineAccountsMapLCase().containsKey(playerName.toLowerCase()))
+        {
+            NetProtocol.sendToClient(Account.getOnlineAccountsMapLCase().get(playerName.toLowerCase()), message, true);
+        }
+    }
+
+    public boolean isOnlineServerPlusClients(String playerName)
+    {
+        return server.getOfflinePlayer(playerName).isOnline() ||
+                Account.getAccountListLCase().contains(playerName.toLowerCase());
 
     }
 }

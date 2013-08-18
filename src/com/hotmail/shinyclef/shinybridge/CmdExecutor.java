@@ -161,9 +161,8 @@ public class CmdExecutor implements CommandExecutor
             return true;
         }
 
-        //remove from map and database
-        Account.getAccountMap().remove(sender.getName());
-        new Database.DeleteAccount(sender.getName()).runTaskAsynchronously(plugin);
+        //removal process
+        Account.unregister(sender.getName());
 
         //user feedback
         sender.sendMessage(ChatColor.YELLOW + "RolyDPlus account successfully removed. You may re-register at any time.");
@@ -274,8 +273,6 @@ public class CmdExecutor implements CommandExecutor
         {
             return false;
         }
-
-
 
         return true;
     }

@@ -1,14 +1,10 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -28,7 +24,7 @@ public class EventListener implements Listener
     }
 
     @EventHandler
-    public void playerLogin(PlayerLoginEvent e)
+    public void playerJoin(PlayerJoinEvent e)
     {
         //construct player chat tag and add to map
         MCServer.addToPlayerChatTagMap(e.getPlayer());
@@ -41,9 +37,8 @@ public class EventListener implements Listener
             account.setRank(MCServer.getRank(e.getPlayer()));
         }
 
-        //send player join message
-        NetProtocolHelper.broadcastChat(ChatColor.WHITE + playerName + ChatColor.YELLOW +
-                " joined the game!", false);
+        //inform clients
+        NetProtocolHelper.broadcastServerJoin(playerName);
     }
 
     @EventHandler
@@ -52,10 +47,9 @@ public class EventListener implements Listener
         //remove player from chatTagMap
         MCServer.removeFromPlayerChatTagMap(e.getPlayer());
 
-        //send player quit message
+        //inform clients
         String playerName = e.getPlayer().getName();
-        NetProtocolHelper.broadcastChat(ChatColor.WHITE + playerName + ChatColor.YELLOW +
-                " left the game!", false);
+        NetProtocolHelper.broadcastServerQuit(playerName);
     }
 
     @EventHandler
