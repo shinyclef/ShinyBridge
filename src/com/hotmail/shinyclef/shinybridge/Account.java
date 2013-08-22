@@ -2,6 +2,7 @@ package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -18,6 +19,7 @@ public class Account
     private static Map<String, Integer> onlineAccountsMapLCase = new HashMap<String, Integer>();
 
     private final String userName;
+    private final String userNameLC;
     private String passwordHash;
     private Rank rank;
     private String chatTag;
@@ -31,13 +33,13 @@ public class Account
     public Account(String userName, String passwordHash, Rank rank)
     {
         this.userName = userName;
+        this.userNameLC = userName.toLowerCase();
         this.passwordHash = passwordHash;
         this.rank = rank;
         isOnline = false;
         lastLogin = null;
         assignedClientID = null;
         accountListLCase.add(userName.toLowerCase());
-        assignNewClientCommandSender();
         assignNewClientPlayer();
     }
 
@@ -64,20 +66,22 @@ public class Account
 
     public static boolean validateLogin(int clientID, String username, String password)
     {
+        String lcUsername = username.toLowerCase();
+
         //check if user is registered
-        if(!accountMap.containsKey(username))
+        if(!accountListLCase.contains(lcUsername))
         {
             return false;
         }
 
         //validate user's password
-        String correctHash = accountMap.get(username).getPasswordHash();
+        String correctHash = accountMap.get(lcUsername).getPasswordHash();
         boolean isValidLogin = AccountPassword.validatePassword(password, correctHash);
 
         if (isValidLogin)
         {
             //set account to the connection and return true
-            login(clientID, username);
+            login(clientID, lcUsername);
             return true;
 
         }
@@ -88,10 +92,11 @@ public class Account
         }
     }
 
-    private static void login(int clientID, String username)
+    private static void login(int clientID, String lcUsername)
     {
         //get account
-        Account account = accountMap.get(username);
+        Account account = accountMap.get(lcUsername);
+        String username = account.getUserName();
 
         //set chat tag
         String rankTag = MCServer.getColouredRankString(account.rank);
@@ -110,17 +115,34 @@ public class Account
         //set logged in values
         account.assignedClientID = clientID;
         account.isOnline = true;
-        onlineAccountsMapLCase.put(account.userName.toLowerCase(), clientID);
+        onlineAccountsMapLCase.put(lcUsername, clientID);
     }
 
     public void logout()
     {
         assignedClientID = null;
         isOnline = false;
-        if (onlineAccountsMapLCase.containsKey(userName.toLowerCase()))
+        if (onlineAccountsMapLCase.containsKey(userNameLC.toLowerCase()))
         {
-            onlineAccountsMapLCase.remove(userName.toLowerCase());
+            onlineAccountsMapLCase.remove(userNameLC.toLowerCase());
         }
+    }
+
+    /* Creates a new r+ account. Command executor has taken care of validation. */
+    public static void register(String username, String password)
+    {
+        //overwrite password with a hash
+        password = AccountPassword.generateHash(password);
+
+        //get rank
+        Account.Rank rank = MCServer.getRank(MCServer.getPlugin().getServer().getPlayer(username));
+
+        //create a new Account
+        Account account = new Account(username, password, rank);
+        Account.getAccountMap().put(username.toLowerCase(), account);
+
+        //insert the new account data into the database
+        new Database.InsertAccount(username, password, rank.toString()).runTaskAsynchronously(MCServer.getPlugin());
     }
 
     public static void unregister(String userName)
@@ -132,7 +154,7 @@ public class Account
         }
 
         //remove from map (exists in map check completed in cmd executor)
-        getAccountMap().remove(userName);
+        getAccountMap().remove(userName.toLowerCase());
 
         //remove from database
         new Database.DeleteAccount(userName).runTaskAsynchronously(ShinyBridge.getPlugin());
@@ -141,11 +163,6 @@ public class Account
     public boolean hasPermission(Rank requiredRank)
     {
         return rank.getLevel() >= requiredRank.getLevel();
-    }
-
-    public void assignNewClientCommandSender()
-    {
-        this.commandSender = new MCServer.ClientCommandSender(this);
     }
 
     public void assignNewClientPlayer()
@@ -217,11 +234,6 @@ public class Account
     public Rank getRank()
     {
         return rank;
-    }
-
-    public CommandSender getCommandSender()
-    {
-        return commandSender;
     }
 
     public MCServer.ClientPlayer getClientPlayer()

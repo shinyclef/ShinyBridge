@@ -48,12 +48,12 @@ public class NetClientIn implements Runnable
         }
         catch (SocketException e)
         {
-            MCServer.pluginLog("Unexpectedly lost connection: " + address);
+            MCServer.bukkitLog("Unexpectedly lost connection: " + address);
             NetProtocolHelper.clientQuit(clientID, null);
         }
         catch (IOException e)
         {
-            MCServer.pluginLog("IO Exception (not a big deal).");
+            MCServer.bukkitLog("IO Exception (not a big deal).");
         }
         finally
         {

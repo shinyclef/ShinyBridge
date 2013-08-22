@@ -173,7 +173,7 @@ public class Database
                 String username = rs.getString(1);
                 String passwordHash = rs.getString(2);
                 Account.Rank rank = Account.Rank.valueOf(rs.getString(3));
-                Account.getAccountMap().put(username, new Account(username, passwordHash, rank));
+                Account.getAccountMap().put(username.toLowerCase(), new Account(username, passwordHash, rank));
             }
         }
         catch (SQLException ex)

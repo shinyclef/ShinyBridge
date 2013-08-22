@@ -1,8 +1,10 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,11 +18,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class EventListener implements Listener
 {
     private ShinyBridge plugin;
+    private ShinyBaseAPI base;
 
-    public EventListener(ShinyBridge plugin)
+    public EventListener(ShinyBridge plugin, ShinyBaseAPI shinyBaseAPI)
     {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
+        this.base = shinyBaseAPI;
     }
 
     @EventHandler
@@ -104,9 +108,14 @@ public class EventListener implements Listener
         e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.MONITOR)
     public void playerChat(AsyncPlayerChatEvent e)
     {
+        if (e.isCancelled())
+        {
+            return;
+        }
+
         new PlayerChatSync(e.getMessage(), e.getPlayer()).runTask(plugin);
     }
 
@@ -127,7 +136,4 @@ public class EventListener implements Listener
             NetProtocol.processServerChat(message, player);
         }
     }
-
-
-
 }

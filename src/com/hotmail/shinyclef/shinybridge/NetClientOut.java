@@ -40,6 +40,7 @@ public class NetClientOut implements Runnable
                 }
                 outToClient.println(msgOut);
                 outToClient.flush();
+                //MCServer.pluginLog(msgOut);
             }
 
             //disconnected message sent, close connection

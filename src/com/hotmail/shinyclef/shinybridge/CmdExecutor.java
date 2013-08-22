@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 public class CmdExecutor implements CommandExecutor
 {
     private static final String noPerm = ChatColor.RED + "You do not have permission to do that.";
-
     private static ShinyBridge plugin;
 
 
@@ -89,7 +88,7 @@ public class CmdExecutor implements CommandExecutor
         String username = sender.getName();
 
         //check if user already has an account
-        if (Account.getAccountMap().containsKey(username))
+        if (Account.getAccountMap().containsKey(username.toLowerCase()))
         {
             sender.sendMessage(ChatColor.RED + "You already have a RolyDPlus account.");
             return;
@@ -126,18 +125,8 @@ public class CmdExecutor implements CommandExecutor
             return;
         }
 
-        //overwrite password with a hash
-        password = AccountPassword.generateHash(password);
-
-        //get rank
-        Account.Rank rank = MCServer.getRank((Player) sender);
-
-        //create a new Account
-        Account account = new Account(username, password, rank);
-        Account.getAccountMap().put(username, account);
-
-        //insert the new account data into the database
-        new Database.InsertAccount(username, password, rank.toString()).runTaskAsynchronously(plugin);
+        //create the new account
+        Account.register(username, password);
 
         //user feedback
         sender.sendMessage(ChatColor.YELLOW + "RolyDPlus account successfully created.");
@@ -155,7 +144,7 @@ public class CmdExecutor implements CommandExecutor
         }
 
         //check if user has an account
-        if (!Account.getAccountMap().containsKey(sender.getName()))
+        if (!Account.getAccountMap().containsKey(sender.getName().toLowerCase()))
         {
             sender.sendMessage(ChatColor.RED + "You do not have an account.");
             return true;

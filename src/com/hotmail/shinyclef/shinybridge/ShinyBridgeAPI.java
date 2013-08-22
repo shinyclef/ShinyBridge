@@ -1,6 +1,9 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.Server;
+import org.bukkit.entity.Player;
+
+import java.util.Set;
 
 /**
  * Author: Shinyclef
@@ -30,5 +33,10 @@ public class ShinyBridgeAPI
         return server.getOfflinePlayer(playerName).isOnline() ||
                 Account.getAccountListLCase().contains(playerName.toLowerCase());
 
+    }
+
+    public Set<Player> getOnlinePlayersEverywhereSet()
+    {
+        return MCServer.getOnlinePlayersEverywhereSet();
     }
 }

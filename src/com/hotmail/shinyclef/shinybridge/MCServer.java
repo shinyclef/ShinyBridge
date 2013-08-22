@@ -2,11 +2,11 @@ package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.map.MapView;
@@ -17,6 +17,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
@@ -24,6 +25,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -69,9 +71,9 @@ public class MCServer extends ShinyBridge
         }
     }
 
-    public static synchronized void pluginLog(String msg)
+    public static synchronized void pluginLog(Level level, String msg)
     {
-        bukkitLog.info("R+: " + msg);
+        bukkitLog.log(level, msg);
     }
 
     public static synchronized void bukkitLog(String msg)
@@ -241,112 +243,18 @@ public class MCServer extends ShinyBridge
         return masterSet;
     }
 
-    public static class ClientCommandSender implements CommandSender
+    public static Set<Player> getOnlinePlayersEverywhereSet()
     {
-        private Account account;
+        Set<Player> recipients;
+        Player[] serverPlayers = s.getOnlinePlayers();
+        recipients = new HashSet<Player>(Arrays.asList(serverPlayers));
 
-        public ClientCommandSender(Account account)
+        for (String playerName : Account.getOnlineAccountsMapLCase().keySet())
         {
-            this.account = account;
+            recipients.add(Account.getAccountMap().get(playerName).getClientPlayer());
         }
 
-        @Override
-        public void sendMessage(String s)
-        {
-            NetProtocol.sendToClient(account.getAssignedClientID(), ChatColor.WHITE + s, true);
-        }
-
-        @Override
-        public void sendMessage(String[] strings)
-        {
-        }
-
-        @Override
-        public Server getServer()
-        {
-            return p.getServer();
-        }
-
-        @Override
-        public String getName()
-        {
-            return account.getUserName();
-        }
-
-        @Override
-        public boolean isPermissionSet(String s)
-        {
-            return false;
-        }
-
-        @Override
-        public boolean isPermissionSet(Permission permission)
-        {
-            return false;
-        }
-
-        @Override
-        public boolean hasPermission(String s)
-        {
-            return account.hasPermission(MCServer.getRank(s));
-        }
-
-        @Override
-        public boolean hasPermission(Permission permission)
-        {
-            return false;
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b)
-        {
-            return null;
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin)
-        {
-            return null;
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, String s, boolean b, int i)
-        {
-            return null;
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, int i)
-        {
-            return null;
-        }
-
-        @Override
-        public void removeAttachment(PermissionAttachment permissionAttachment)
-        {
-        }
-
-        @Override
-        public void recalculatePermissions()
-        {
-        }
-
-        @Override
-        public Set<PermissionAttachmentInfo> getEffectivePermissions()
-        {
-            return null;
-        }
-
-        @Override
-        public boolean isOp()
-        {
-            return false;
-        }
-
-        @Override
-        public void setOp(boolean b)
-        {
-        }
+        return recipients;
     }
 
     public static class ClientPlayer implements Player
@@ -358,10 +266,10 @@ public class MCServer extends ShinyBridge
             this.account = account;
         }
 
-        @Override //IMPLEMENTED HALF
+        @Override //IMPLEMENTED
         public String getDisplayName()
         {
-            return account.getUserName();
+            return account.getChatTag();
         }
 
         @Override
@@ -415,9 +323,10 @@ public class MCServer extends ShinyBridge
 
         }
 
-        @Override
-        public void chat(String s)
+        @Override //IMPLEMENTED
+        public void chat(String msg)
         {
+            s.getScheduler().runTaskAsynchronously(p, new AsyncChat(this, msg));
         }
 
         @Override //IMPLEMENTED
@@ -1179,16 +1088,16 @@ public class MCServer extends ShinyBridge
         {
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public Location getLocation()
         {
-            return null;
+            return new Location(getWorld(), -10d, 66d, -21d);
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public Location getLocation(Location location)
         {
-            return null;
+            return new Location(getWorld(), -10d, 66d, -21d);
         }
 
         @Override
@@ -1202,10 +1111,10 @@ public class MCServer extends ShinyBridge
             return null;
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public World getWorld()
         {
-            return null;
+            return s.getWorld("world");
         }
 
         @Override
@@ -1537,7 +1446,31 @@ public class MCServer extends ShinyBridge
         }
     }
 
+    private static class AsyncChat extends BukkitRunnable
+    {
+        Player player;
+        String msg;
 
+        private AsyncChat(Player player, String msg)
+        {
+            this.player = player;
+            this.msg = msg;
+        }
+
+        @Override
+        public void run()
+        {
+            AsyncPlayerChatEvent e = new AsyncPlayerChatEvent(false, player, msg, getOnlinePlayersEverywhereSet());
+            s.getPluginManager().callEvent(e);
+
+            if (e.isCancelled())
+            {
+                return;
+            }
+
+            s.broadcastMessage(player.getDisplayName() + msg);
+        }
+    }
 
 
     // ---------- getters ---------- //

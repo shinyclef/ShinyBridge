@@ -3,6 +3,7 @@ package com.hotmail.shinyclef.shinybridge;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -26,7 +27,10 @@ public class NetProtocol
     private static Logger log = p.getLogger();
     protected static Map<Integer, NetClientConnection> clientMap = NetClientConnection.getClientMap();
 
-    /* Sends output to the specified client. */
+
+    /* ----- Sending to Client ----- */
+
+    /* Se9nds output to the specified client. */
     protected static synchronized void sendToClient(int clientID, String output, boolean isChat)
     {
         if (isChat)
@@ -44,7 +48,8 @@ public class NetProtocol
         }
     }
 
-    // -------------------- Client-Originated -------------------- //
+
+    /* ----- Client-Originated ----- */
 
     /* Processes raw input as received from clients, identifying work type and delegating to appropriate method. */
     public static synchronized void processInput(String input, int clientID)
@@ -56,15 +61,15 @@ public class NetProtocol
         }
 
         //parse message type
-        if (input.startsWith("@")) //custom command
+        if (input.startsWith(CUSTOM_COMMAND_MARKER))
         {
             processCustomCommand(input, clientID);
         }
-        else if (input.startsWith("/")) //mc command
+        else if (input.startsWith(MC_COMMAND_MARKER))
         {
             processMCCommand(input, clientID);
         }
-        else if (input.startsWith("*"))//chat message
+        else if (input.startsWith(CHAT_MARKER))
         {
             processClientChat(input, clientID);
         }
@@ -89,7 +94,7 @@ public class NetProtocol
         String chatLine = fullChatTag + message;
 
         //send chat to server and all clients
-        NetProtocolHelper.broadcastChat(chatLine, true);
+        account.getClientPlayer().chat(message);
     }
 
     /* Processes command data as send from clients. */
@@ -136,9 +141,18 @@ public class NetProtocol
 
         if (MCServer.getCommandWhiteList().contains(baseCommand))
         {
-            s.dispatchCommand(NetClientConnection.getClientMap().get(clientID)
-                    .getAccount().getClientPlayer(), commandLine);
+            MCServer.ClientPlayer clientPlayer = NetClientConnection.getClientMap().get(clientID)
+                    .getAccount().getClientPlayer();
 
+            PlayerCommandPreprocessEvent e = new PlayerCommandPreprocessEvent(clientPlayer, "/" + commandLine);
+            s.getPluginManager().callEvent(e);
+
+            if (e.isCancelled())
+            {
+                return;
+            }
+
+            s.dispatchCommand(clientPlayer, commandLine);
         }
         else
         {
@@ -147,13 +161,21 @@ public class NetProtocol
     }
 
 
-    // -------------------- Server-Originated -------------------- //
+    /* ----- Server-Originated ----- */
 
     /* Processes server chat, broadcasting to all chat clients */
     public static synchronized void processServerChat(String msg, Player player)
     {
         //get the full chat tag of the player
-        String chatTag = MCServer.getPlayerChatTagMap().get(player.getName());
+        String chatTag;
+        if (player instanceof MCServer.ClientPlayer)
+        {
+            chatTag = player.getDisplayName();
+        }
+        else
+        {
+            chatTag = MCServer.getPlayerChatTagMap().get(player.getName());
+        }
 
         //add the message
         String chatLine = chatTag + msg;

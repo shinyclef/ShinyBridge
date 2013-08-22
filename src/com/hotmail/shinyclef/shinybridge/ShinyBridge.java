@@ -27,7 +27,6 @@ public class ShinyBridge extends JavaPlugin
     private static ShinyBridgeAPI shinyBridgeAPI;
     private static ShinyBaseAPI shinyBaseAPI;
     private static Logger log;
-    private NetConnectionDelegator netConnectionDelegator;
 
     @Override
     public void onEnable()
@@ -35,6 +34,8 @@ public class ShinyBridge extends JavaPlugin
         //assign variables
         plugin = this;
         log = this.getLogger();
+
+        //setup shinyBase
         Plugin base = Bukkit.getPluginManager().getPlugin("ShinyBase");
         if (base != null)
         {
@@ -42,7 +43,7 @@ public class ShinyBridge extends JavaPlugin
         }
 
         //command executor and event listener
-        new EventListener(this);
+        new EventListener(this, shinyBaseAPI);
         final CommandExecutor cmdExecutor = new CmdExecutor();
         getCommand("rolydplus").setExecutor(cmdExecutor);
 
@@ -77,7 +78,7 @@ public class ShinyBridge extends JavaPlugin
         try
         {
             serverSocket = new ServerSocket(port);
-            netConnectionDelegator = new NetConnectionDelegator(serverSocket);
+            NetConnectionDelegator netConnectionDelegator = new NetConnectionDelegator(serverSocket);
             new Thread(netConnectionDelegator).start();
         }
         catch (IOException e)
@@ -90,6 +91,11 @@ public class ShinyBridge extends JavaPlugin
     public static synchronized ShinyBridge getPlugin()
     {
         return plugin;
+    }
+
+    public ShinyBaseAPI getShinyBaseAPI()
+    {
+        return shinyBaseAPI;
     }
 
     public ShinyBridgeAPI getShinyBridgeAPI()

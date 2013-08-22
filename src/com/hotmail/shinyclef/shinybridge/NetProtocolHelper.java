@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 public class NetProtocolHelper extends NetProtocol
 {
-    private static final String COLOUR_CHAR = String.valueOf('\u00A7');
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
     private static Logger log = p.getLogger();
@@ -163,11 +162,11 @@ public class NetProtocolHelper extends NetProtocol
         }
         else
         {
-            MCServer.pluginLog(serverQuitMessage);
+            MCServer.bukkitLog(serverQuitMessage);
         }
     }
 
-    public static void clientForceQuit(int clientID, String[] args)
+    public static void clientKick(int clientID, String[] args)
     {
         //send disconnect message to client
         NetProtocol.sendToClient(clientID, NetProtocol.QUIT_MESSAGE + ":Forced", false);

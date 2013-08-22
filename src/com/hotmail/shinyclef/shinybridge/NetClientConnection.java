@@ -46,7 +46,7 @@ public class NetClientConnection
         clientMap.put(clientID, this);
 
         //announce
-        MCServer.pluginLog("Connection established: " + socket.getRemoteSocketAddress());
+        MCServer.bukkitLog("Connection established: " + socket.getRemoteSocketAddress());
     }
 
     /* This must happen after the constructor finishes so the object can finish

@@ -1,6 +1,7 @@
+depend: [ShinyBase]
 name: ShinyBridge
 main: com.hotmail.shinyclef.shinybridge.ShinyBridge
-version: 0.0.4
+version: 0.0.5
 commands:
     rolydplus:
         description: Gives access to bridge commands.
