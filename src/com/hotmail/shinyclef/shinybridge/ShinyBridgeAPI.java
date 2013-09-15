@@ -22,17 +22,32 @@ public class ShinyBridgeAPI
 
     public void sendToClient(String playerName, String message)
     {
-        if (Account.getOnlineAccountsMapLCase().containsKey(playerName.toLowerCase()))
+        if (Account.getOnlineLcUsersClientMap().containsKey(playerName.toLowerCase()))
         {
-            NetProtocol.sendToClient(Account.getOnlineAccountsMapLCase().get(playerName.toLowerCase()), message, true);
+            NetProtocol.sendToClient(Account.getOnlineLcUsersClientMap().get(playerName.toLowerCase()), message, true);
         }
     }
 
     public boolean isOnlineServerPlusClients(String playerName)
     {
         return server.getOfflinePlayer(playerName).isOnline() ||
-                Account.getAccountListLCase().contains(playerName.toLowerCase());
+                Account.getOnlineLcUsersAccountMap().containsKey(playerName.toLowerCase());
 
+    }
+
+    public String onlineAnywherePlayerName(String playerNameLc)
+    {
+        if (server.getOfflinePlayer(playerNameLc).isOnline())
+        {
+            return server.getPlayer(playerNameLc).getName();
+        }
+
+        if (Account.getOnlineLcUsersAccountMap().containsKey(playerNameLc))
+        {
+            return Account.getOnlineLcUsersAccountMap().get(playerNameLc).getUserName();
+        }
+
+        return null;
     }
 
     public Set<Player> getOnlinePlayersEverywhereSet()

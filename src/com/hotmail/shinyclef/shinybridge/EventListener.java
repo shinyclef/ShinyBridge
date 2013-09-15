@@ -1,6 +1,9 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
+import com.hotmail.shinyclef.shinybridge.NetProtocol;
+import com.hotmail.shinyclef.shinybridge.NetProtocolHelper;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -8,6 +11,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: Shinyclef
@@ -19,12 +25,26 @@ public class EventListener implements Listener
 {
     private ShinyBridge plugin;
     private ShinyBaseAPI base;
+    private Set<String> commandList;
 
     public EventListener(ShinyBridge plugin, ShinyBaseAPI shinyBaseAPI)
     {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
         this.base = shinyBaseAPI;
+        populateCommandList();
+    }
+
+    /* The list of commands the commandPreProcess listener should not ignore. */
+    private void populateCommandList()
+    {
+        commandList = new HashSet<String>();
+        commandList.add("/rolydplus");
+        commandList.add("/r+");
+        commandList.add("/rplus");
+        commandList.add("/ban");
+        commandList.add("/tempban");
+        commandList.add("/kick");
     }
 
     @EventHandler
@@ -59,35 +79,39 @@ public class EventListener implements Listener
     @EventHandler
     public void eventCommandPreprocess(PlayerCommandPreprocessEvent e)
     {
-        //cancel early for any commands that don't start with /rolydplus register
         final String message = e.getMessage().trim();
         String lcMessage = message.toLowerCase();
 
-        //filter command and aliases
-        if (!lcMessage.startsWith("/rolydplus") && !lcMessage.startsWith("/r+") && !lcMessage.startsWith("/rplus"))
-        {
-            return;
-        }
-
-        //setup args string
+        //setup args string and command
+        String command;
         String argsString;
         if (message.contains(" "))
         {
+            command = message.substring(0, message.indexOf(" "));
             argsString = message.substring(message.indexOf(" ") + 1);
         }
         else
         {
+            command = message;
             argsString = "";
         }
 
-        //return if we don't want the sub-command
-        if (!argsString.toLowerCase().startsWith("register") &&
-                !argsString.toLowerCase().startsWith("changepassword"))
+        //filter command and aliases
+        boolean relevantCommandFound = false;
+        for (String com : commandList)
+        {
+            if (command.equals(com))
+            {
+                relevantCommandFound = true;
+            }
+        }
+
+        if (!relevantCommandFound)
         {
             return;
         }
 
-        //setup sender
+        //setup sender command and sender
         CommandSender sender = e.getPlayer();
 
         //convert the args string to args array
@@ -102,10 +126,7 @@ public class EventListener implements Listener
         }
 
         //send all our data to be parsed
-        CmdExecutor.preProcessParser(sender, args);
-
-        //cancel original command
-        e.setCancelled(true);
+        PreProcessParser.parser(e, sender, command, args);
     }
 
     @EventHandler (priority = EventPriority.MONITOR)

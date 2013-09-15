@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import me.mahoutsukaii.plugins.banreport.BanReport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.conversations.Conversation;
@@ -21,6 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -41,6 +43,7 @@ public class MCServer extends ShinyBridge
     private static Logger bukkitLog;
     private static Logger pluginLog;
     private static Map<String, String> playerChatTagMap;
+    private static ArrayList<String> bannedPlayers;
 
     private static List<String> commandWhiteList;
 
@@ -53,6 +56,13 @@ public class MCServer extends ShinyBridge
         playerChatTagMap = new HashMap<String, String>();
         commandWhiteList = new ArrayList<String>();
         reloadCommandWhiteList();
+
+        //getBannedPlayers list from BanReport
+        Plugin banReport = Bukkit.getPluginManager().getPlugin("BanReport");
+        if (banReport != null)
+        {
+            bannedPlayers = ((BanReport)banReport).bannedNubs;
+        }
     }
 
     public static void reloadCommandWhiteList()
@@ -219,6 +229,11 @@ public class MCServer extends ShinyBridge
         return set;
     }
 
+    public static boolean isBanned(String playerName)
+    {
+        return bannedPlayers.contains(playerName.toLowerCase());
+    }
+
     //Prefix '+' for logged in both, '-' for client only, and no prefix for server only.
     public static Set<String> getAllOnlinePlayerFormattedNamesSet()
     {
@@ -249,7 +264,7 @@ public class MCServer extends ShinyBridge
         Player[] serverPlayers = s.getOnlinePlayers();
         recipients = new HashSet<Player>(Arrays.asList(serverPlayers));
 
-        for (String playerName : Account.getOnlineAccountsMapLCase().keySet())
+        for (String playerName : Account.getOnlineLcUsersClientMap().keySet())
         {
             recipients.add(Account.getAccountMap().get(playerName).getClientPlayer());
         }
@@ -306,9 +321,7 @@ public class MCServer extends ShinyBridge
                     .get(account.getAssignedClientID()).getSocket();
             InetAddress inetAddress = socket.getInetAddress();
             int port = socket.getPort();
-            InetSocketAddress inetSocketAddress = new InetSocketAddress(inetAddress, port);
-
-            return inetSocketAddress;
+            return new InetSocketAddress(inetAddress, port);
         }
 
         @Override //IMPLEMENTED

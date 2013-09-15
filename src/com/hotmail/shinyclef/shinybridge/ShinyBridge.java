@@ -2,17 +2,16 @@ package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.ShinyBase;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
+import com.hotmail.shinyclef.shinybridge.NetConnectionDelegator;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.ServerSocket;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
@@ -23,6 +22,8 @@ import java.util.logging.Logger;
 
 public class ShinyBridge extends JavaPlugin
 {
+    public static final boolean DEV_BUILD = true;
+
     private static ShinyBridge plugin;
     private static ShinyBridgeAPI shinyBridgeAPI;
     private static ShinyBaseAPI shinyBaseAPI;
@@ -44,7 +45,7 @@ public class ShinyBridge extends JavaPlugin
 
         //command executor and event listener
         new EventListener(this, shinyBaseAPI);
-        final CommandExecutor cmdExecutor = new CmdExecutor();
+        CommandExecutor cmdExecutor = new CmdExecutor();
         getCommand("rolydplus").setExecutor(cmdExecutor);
 
         //make sure config exists
@@ -54,6 +55,7 @@ public class ShinyBridge extends JavaPlugin
         Database.prepareConnection(this);
         new Database.onPluginLoad().runTaskAsynchronously(plugin);
         MCServer.initialize(this);
+        PreProcessParser.initialize(shinyBaseAPI);
         initializeConnDelegator();
         shinyBridgeAPI = new ShinyBridgeAPI();
 

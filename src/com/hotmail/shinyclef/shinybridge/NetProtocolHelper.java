@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Server;
 
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -126,57 +127,71 @@ public class NetProtocolHelper extends NetProtocol
         masterList = masterList.substring(0, masterList.length() - 1);
 
         //send it
-        NetProtocol.sendToClient(clientID, "@PlayerList:" +  masterList, false);
+        sendToClient(clientID, "@PlayerList:" +  masterList, false);
     }
 
     public static void clientQuit(int clientID, String[] args)
     {
+        String type = args[1];
+
+
+
         //check if client is logged in and get account
         Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
-        boolean wasLoggedIn;
-        String serverQuitMessage;
+        boolean wasLoggedIn = false;
 
         if (account != null)
         {
             wasLoggedIn = true;
-            account.logout();
-            String userName = account.getUserName();
-            serverQuitMessage = ChatColor.WHITE + userName + ChatColor.YELLOW + " left RolyDPlus!";
-        }
-        else
-        {
-            wasLoggedIn = false;
-            serverQuitMessage = "Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress();
+            account.logout(true);
         }
 
         //finish disconnecting client
         NetClientConnection.getClientMap().get(clientID).disconnectClient();
 
-        //broadcast the message to the appropriate place
-        if (wasLoggedIn)
+        //broadcast to console if it's a client that wasn't logged in
+        if (!wasLoggedIn)
         {
-            MCServer.getPlugin().getServer().broadcastMessage(serverQuitMessage);
-
-            //inform clients
-            broadcastClientQuit(account.getUserName());
-        }
-        else
-        {
-            MCServer.bukkitLog(serverQuitMessage);
+            MCServer.bukkitLog("Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress());
         }
     }
 
-    public static void clientKick(int clientID, String[] args)
+    public static void clientForcedQuit(int clientID, String type, String tempBanLength, String reason)
     {
+        String typeInfo;
+        switch (type.toLowerCase())
+        {
+            case "kick":
+                typeInfo = "Kick";
+                break;
+
+            case "ban":
+                typeInfo = "Ban";
+                break;
+
+            case "tempban":
+                typeInfo = "TempBan:" + tempBanLength;
+                break;
+
+            case "duplicateLogin":
+                typeInfo = "DuplicateLogin";
+                break;
+
+            default:
+                MCServer.pluginLog(Level.WARNING,
+                        "Unexpected message in NetProtocolHelper.clientForcedQuit: type == " + type);
+                return;
+        }
+
         //send disconnect message to client
-        NetProtocol.sendToClient(clientID, NetProtocol.QUIT_MESSAGE + ":Forced", false);
+        sendToClient(clientID, QUIT_MESSAGE + ":" + typeInfo + ":" + reason, false);
     }
 
     public static void broadcastServerJoin(String playerName)
     {
         //check if they're logged in client
         String currentPresence = "Server";
-        if (Account.getOnlineAccountsMapLCase().keySet().contains(playerName.toLowerCase()))
+        if (Account.getOnlineLcUsersClientMap().keySet().contains(playerName.toLowerCase()))
         {
             currentPresence = "Both";
         }
@@ -189,7 +204,7 @@ public class NetProtocolHelper extends NetProtocol
     {
         //check if they're logged in client
         String currentPresence = "None";
-        if (Account.getOnlineAccountsMapLCase().keySet().contains(playerName.toLowerCase()))
+        if (Account.getOnlineLcUsersClientMap().keySet().contains(playerName.toLowerCase()))
         {
             currentPresence = "Client";
         }

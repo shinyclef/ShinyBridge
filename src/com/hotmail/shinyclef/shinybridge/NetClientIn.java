@@ -49,7 +49,7 @@ public class NetClientIn implements Runnable
         catch (SocketException e)
         {
             MCServer.bukkitLog("Unexpectedly lost connection: " + address);
-            NetProtocolHelper.clientQuit(clientID, null);
+            NetProtocol.processInput(NetProtocol.QUIT_MESSAGE_UNEXPECTED, clientID);
         }
         catch (IOException e)
         {
@@ -71,6 +71,5 @@ public class NetClientIn implements Runnable
                 //swallow
             }
         }
-
     }
 }

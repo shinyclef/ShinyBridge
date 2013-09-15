@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="BanReport">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../BanReport.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

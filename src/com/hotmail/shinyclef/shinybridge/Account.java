@@ -2,7 +2,6 @@ package com.hotmail.shinyclef.shinybridge;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -16,7 +15,8 @@ public class Account
 {
     private static Map<String, Account> accountMap = new HashMap<String, Account>();
     private static List<String> accountListLCase = new ArrayList<String>();
-    private static Map<String, Integer> onlineAccountsMapLCase = new HashMap<String, Integer>();
+    private static Map<String, Integer> onlineLcUsersClientMap = new HashMap<String, Integer>();
+    private static Map<String, Account> onlineLcUsersAccountMap = new HashMap<String, Account>();
 
     private final String userName;
     private final String userNameLC;
@@ -66,24 +66,45 @@ public class Account
 
     public static boolean validateLogin(int clientID, String username, String password)
     {
-        String lcUsername = username.toLowerCase();
+        String usernameLc = username.toLowerCase();
 
         //check if user is registered
-        if(!accountListLCase.contains(lcUsername))
+        if(!accountListLCase.contains(usernameLc))
         {
             return false;
         }
 
         //validate user's password
-        String correctHash = accountMap.get(lcUsername).getPasswordHash();
+        String correctHash = accountMap.get(usernameLc).getPasswordHash();
         boolean isValidLogin = AccountPassword.validatePassword(password, correctHash);
 
         if (isValidLogin)
         {
-            //set account to the connection and return true
-            login(clientID, lcUsername);
-            return true;
+            boolean isAlreadyLoggedIn = false;
 
+            //check for any current connections
+            if (onlineLcUsersAccountMap.containsKey(usernameLc))
+            {
+                isAlreadyLoggedIn = true;
+
+                int oldClientID = onlineLcUsersClientMap.get(usernameLc);
+                NetClientConnection.getClientMap().get(oldClientID).disconnectClient();
+
+                NetProtocolHelper.clientForcedQuit(oldClientID, "DuplicateLogin", null,
+                        "You have logged in from another client.");
+
+                /*//disconnect current session (must happen before account logout
+                int oldClientID = onlineLcUsersClientMap.get(usernameLc);
+                NetClientConnection.getClientMap().get(oldClientID).disconnectClient();
+
+                //log out current account
+                onlineLcUsersAccountMap.get(usernameLc).logout(false);*/
+
+            }
+
+            //set account to the connection and return true
+            login(clientID, usernameLc, !isAlreadyLoggedIn);
+            return true;
         }
         else
         {
@@ -92,7 +113,7 @@ public class Account
         }
     }
 
-    private static void login(int clientID, String lcUsername)
+    private static void login(int clientID, String lcUsername, boolean announce)
     {
         //get account
         Account account = accountMap.get(lcUsername);
@@ -106,26 +127,47 @@ public class Account
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
 
         //broadcast login on server
+        if (announce)
+        {
+            announceLogin(username);
+        }
+
+        //set logged in values
+        account.assignedClientID = clientID;
+        account.isOnline = true;
+        onlineLcUsersClientMap.put(lcUsername, clientID);
+        onlineLcUsersAccountMap.put(lcUsername, account);
+    }
+
+    public void logout(boolean announce)
+    {
+        assignedClientID = null;
+        isOnline = false;
+        onlineLcUsersClientMap.remove(userNameLC);
+        onlineLcUsersAccountMap.remove(userNameLC);
+
+        if (announce)
+        {
+            announceLogout(userName);
+        }
+    }
+
+    public static void announceLogin(String username)
+    {
         MCServer.getPlugin().getServer().broadcastMessage(ChatColor.WHITE + username +
                 ChatColor.YELLOW + " joined RolyDPlus!");
 
         //inform clients
         NetProtocolHelper.broadcastClientJoin(username);
-
-        //set logged in values
-        account.assignedClientID = clientID;
-        account.isOnline = true;
-        onlineAccountsMapLCase.put(lcUsername, clientID);
     }
 
-    public void logout()
+    public static void announceLogout(String username)
     {
-        assignedClientID = null;
-        isOnline = false;
-        if (onlineAccountsMapLCase.containsKey(userNameLC.toLowerCase()))
-        {
-            onlineAccountsMapLCase.remove(userNameLC.toLowerCase());
-        }
+        //inform server
+        MCServer.getPlugin().getServer().broadcastMessage(ChatColor.WHITE + username +
+                ChatColor.YELLOW + " left RolyDPlus!");
+
+        //inform clients
     }
 
     /* Creates a new r+ account. Command executor has taken care of validation. */
@@ -160,6 +202,15 @@ public class Account
         new Database.DeleteAccount(userName).runTaskAsynchronously(ShinyBridge.getPlugin());
     }
 
+    public void kick(String type, String tempBanLength, String reason)
+    {
+        //send the kick command to the client
+        NetProtocolHelper.clientForcedQuit(assignedClientID, type, tempBanLength, reason);
+
+        //log user out
+        logout(false);
+    }
+
     public boolean hasPermission(Rank requiredRank)
     {
         return rank.getLevel() >= requiredRank.getLevel();
@@ -173,7 +224,7 @@ public class Account
     public static Set<String> getLoggedInClientUsernamesSet()
     {
         Set<String> set = new HashSet<String>();
-        for (int clientID : onlineAccountsMapLCase.values())
+        for (int clientID : onlineLcUsersClientMap.values())
         {
             set.add(NetClientConnection.getClientMap().get(clientID).getAccount().getUserName());
         }
@@ -211,9 +262,14 @@ public class Account
         return accountListLCase;
     }
 
-    public static Map<String, Integer> getOnlineAccountsMapLCase()
+    public static Map<String, Integer> getOnlineLcUsersClientMap()
     {
-        return onlineAccountsMapLCase;
+        return onlineLcUsersClientMap;
+    }
+
+    public static Map<String, Account> getOnlineLcUsersAccountMap()
+    {
+        return onlineLcUsersAccountMap;
     }
 
     public String getUserName()

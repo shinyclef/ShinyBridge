@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +21,7 @@ public class NetProtocol
     private static final String CUSTOM_COMMAND_MARKER = "@";
     private static final String MC_COMMAND_MARKER = "/";
     public static final String QUIT_MESSAGE = CUSTOM_COMMAND_MARKER + "Disconnect";
+    public static final String QUIT_MESSAGE_UNEXPECTED = QUIT_MESSAGE + ":Unexpected";
     public static final String POISON_PILL_OUT = CUSTOM_COMMAND_MARKER + "PoisonPill";
 
     private static ShinyBridge p = ShinyBridge.getPlugin();
@@ -30,8 +32,8 @@ public class NetProtocol
 
     /* ----- Sending to Client ----- */
 
-    /* Se9nds output to the specified client. */
-    protected static synchronized void sendToClient(int clientID, String output, boolean isChat)
+    /* Sends output to the specified client. */
+    public static synchronized void sendToClient(int clientID, String output, boolean isChat)
     {
         if (isChat)
         {
@@ -61,17 +63,23 @@ public class NetProtocol
         }
 
         //parse message type
-        if (input.startsWith(CUSTOM_COMMAND_MARKER))
+        switch (input.substring(0, 1))
         {
-            processCustomCommand(input, clientID);
-        }
-        else if (input.startsWith(MC_COMMAND_MARKER))
-        {
-            processMCCommand(input, clientID);
-        }
-        else if (input.startsWith(CHAT_MARKER))
-        {
-            processClientChat(input, clientID);
+            case CHAT_MARKER:
+                processClientChat(input, clientID);
+                break;
+
+            case CUSTOM_COMMAND_MARKER:
+                processCustomCommand(input, clientID);
+                break;
+
+            case MC_COMMAND_MARKER:
+                processMCCommand(input, clientID);
+                break;
+
+            default:
+                MCServer.pluginLog(Level.WARNING, "Unexpected input in NetProtocol.ProcessInput");
+                break;
         }
     }
 

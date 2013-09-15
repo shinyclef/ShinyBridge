@@ -1,4 +1,5 @@
 depend: [ShinyBase]
+softdepend: [BanReport]
 name: ShinyBridge
 main: com.hotmail.shinyclef.shinybridge.ShinyBridge
 version: 0.0.5

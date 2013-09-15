@@ -3,6 +3,7 @@ package com.hotmail.shinyclef.shinybridge;
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 
 /**
  * Author: Shinyclef
@@ -38,9 +39,14 @@ public class NetClientOut implements Runnable
                 {
                     break;
                 }
+
                 outToClient.println(msgOut);
                 outToClient.flush();
-                //MCServer.pluginLog(msgOut);
+
+                if (ShinyBridge.DEV_BUILD)
+                {
+                    MCServer.pluginLog(Level.INFO, msgOut);
+                }
             }
 
             //disconnected message sent, close connection

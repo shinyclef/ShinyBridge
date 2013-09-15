@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 /**
  * Author: Shinyclef
@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 
 public class CmdExecutor implements CommandExecutor
 {
-    private static final String noPerm = ChatColor.RED + "You do not have permission to do that.";
+    public static final String NO_PERM = ChatColor.RED + "You do not have permission to do that.";
     private static ShinyBridge plugin;
 
 
@@ -36,48 +36,45 @@ public class CmdExecutor implements CommandExecutor
 
             String subCommand = args[0].toLowerCase();
 
-            if (subCommand.equals("help"))
+            switch (subCommand)
             {
-                return showHelp(sender, args);
+                case "help":
+                    return showHelp(sender, args);
+
+                case "unregister":
+                    return unregister(sender, args);
+
+                case "debug":
+                    return debug(sender);
+
+                case "reloadcommandwhitelist":
+                    return reloadCommandWhiteList(sender);
             }
-            else if (subCommand.equals("unregister"))
-            {
-                return unregister(sender, args);
-            }
-            else if (subCommand.equals("debug"))
-            {
-                if (!sender.hasPermission("rolyd.mod"))
-                {
-                    sender.sendMessage(noPerm);
-                    return true;
-                }
-                Database.printDebug(sender);
-                return true;
-            }
-            else if (subCommand.equals("reloadcommandwhitelist"))
-            {
-                MCServer.reloadCommandWhiteList();
-                sender.sendMessage(ChatColor.YELLOW + "Command white list reloaded.");
-                return true;
-            }
+
         }
         return false;
     }
 
-    public static void preProcessParser(CommandSender sender, String[] args)
+    public static void rPlusParser(PlayerCommandPreprocessEvent e,
+                                    CommandSender sender, String[] args)
     {
-        if (args[0].equalsIgnoreCase("register"))
+        switch (args[0])
         {
-            register(sender, args);
-        }
-        else if (args[0].equalsIgnoreCase("changepassword"))
-        {
-            changePassword(sender, args);
+            case "register":
+                register(e, sender, args);
+                break;
+            case "changepassword":
+                changePassword(e, sender, args);
+                break;
         }
     }
 
-    public static void register(CommandSender sender, String[] args)
+    public static void register(PlayerCommandPreprocessEvent e,
+                                CommandSender sender, String[] args)
     {
+        //cancel original command
+        e.setCancelled(true);
+
         //needs 2 args
         if (args.length != 2)
         {
@@ -159,7 +156,8 @@ public class CmdExecutor implements CommandExecutor
         return true;
     }
 
-    public static void changePassword(CommandSender sender, String[] args)
+    public static void changePassword(PlayerCommandPreprocessEvent e,
+                                      CommandSender sender, String[] args)
     {
         /* Format is /rolydplus changepassword (new password) */
 
@@ -214,47 +212,17 @@ public class CmdExecutor implements CommandExecutor
 
         //replacement log message
         Bukkit.getLogger().info(sender.getName() + " issued server command: /rolydplus changepassword ********");
-    }
 
-    private boolean disconnectUser(CommandSender sender, String[] args)
-    {
-        if (!sender.hasPermission("rolyd.mod"))
-        {
-            sender.sendMessage(noPerm);
-            return true;
-        }
+        //cancel original event
+        e.setCancelled(true);
 
-        if (args.length != 2)
-        {
-            return false;
-        }
-
-        //get sender name and check if user has an account
-        String userName = args[1];
-        if (!Account.getAccountMap().containsKey(userName))
-        {
-            sender.sendMessage(ChatColor.RED + "That user does not have a RolyDPlus account.");
-            return true;
-        }
-
-        //check if user is logged in and get ClientConnection
-        Integer connectionID = Account.getAccountMap().get(userName).getAssignedClientID();
-        if (connectionID == null)
-        {
-            sender.sendMessage(ChatColor.RED + "That user is not currently connected to RolyDPlus.");
-            return true;
-        }
-
-
-
-        return true;
     }
 
     private boolean lockdown(CommandSender sender, String[] args)
     {
         if (!sender.hasPermission("rolyd.mod"))
         {
-            sender.sendMessage(noPerm);
+            sender.sendMessage(NO_PERM);
             return true;
         }
 
@@ -288,5 +256,27 @@ public class CmdExecutor implements CommandExecutor
         return true;
     }
 
+    private boolean reloadCommandWhiteList(CommandSender sender)
+    {
+        if (!sender.hasPermission("roly.mod"))
+        {
+            sender.sendMessage(NO_PERM);
+            return true;
+        }
+        MCServer.reloadCommandWhiteList();
+        sender.sendMessage(ChatColor.YELLOW + "Command white list reloaded.");
+        return true;
+    }
 
+    private boolean debug(CommandSender sender)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(NO_PERM);
+            return true;
+        }
+
+        Database.printDebug(sender);
+        return true;
+    }
 }
