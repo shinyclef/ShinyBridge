@@ -1,10 +1,12 @@
 package com.hotmail.shinyclef.shinybridge;
-
+import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 
 /**
  * Author: Shinyclef
@@ -17,6 +19,7 @@ public class NetClientConnection
     //static class vars
     private static int latestConnectionID = 0;
     private static Map<Integer, NetClientConnection> clientMap = new HashMap<Integer, NetClientConnection>();
+    private static final int TIMEOUT_SECONDS = 30;
 
     //object vars
     private final Socket socket;
@@ -42,11 +45,21 @@ public class NetClientConnection
         account = null;
         readyToCloseSockets = false;
 
+        //set socket timeout
+        try
+        {
+            socket.setSoTimeout(TIMEOUT_SECONDS * 1000);
+        }
+        catch (SocketException e)
+        {
+            MCServer.bukkitLog(Level.SEVERE, "Unable to set socket timeout for client.");
+        }
+
         //store client in map
         clientMap.put(clientID, this);
 
         //announce
-        MCServer.bukkitLog("Connection established: " + socket.getRemoteSocketAddress());
+        MCServer.pluginLog("Connection established: " + socket.getRemoteSocketAddress());
     }
 
     /* This must happen after the constructor finishes so the object can finish
@@ -59,10 +72,39 @@ public class NetClientConnection
 
     public void disconnectClient()
     {
-        //shut down clientOut and remove client from map
+        //shut down in/out and remove client from map
         NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
+        try
+        {
+            socket.close();
+        }
+        catch (IOException e)
+        {
+            //already closed
+        }
+
         NetClientConnection.getClientMap().remove(clientID);
     }
+
+    public void timeOut()
+    {
+        //get user ID (usually name)
+        String ID;
+        if (account == null)
+        {
+            ID = ipAddress;
+        }
+        else
+        {
+            ID = account.getUserName();
+        }
+
+        //broadcast timeout
+        MCServer.pluginLog(ID + " timed out.");
+        account.logout(true);
+        disconnectClient();
+    }
+
 
     /* Setters */
 

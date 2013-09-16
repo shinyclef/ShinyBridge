@@ -1,6 +1,5 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
 
 import java.util.Set;
@@ -134,9 +133,10 @@ public class NetProtocolHelper extends NetProtocol
     {
         String type = args[1];
 
-
+        MCServer.pluginLog("clientQuit type: " + type);
 
         //check if client is logged in and get account
+        //!!!! NetClientConnection.getClientMap().get(clientID) == null
         Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
         boolean wasLoggedIn = false;
 
@@ -146,14 +146,14 @@ public class NetProtocolHelper extends NetProtocol
             account.logout(true);
         }
 
-        //finish disconnecting client
-        NetClientConnection.getClientMap().get(clientID).disconnectClient();
-
         //broadcast to console if it's a client that wasn't logged in
         if (!wasLoggedIn)
         {
-            MCServer.bukkitLog("Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress());
+            MCServer.pluginLog("Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress());
         }
+
+        //finish disconnecting client
+        NetClientConnection.getClientMap().get(clientID).disconnectClient();
     }
 
     public static void clientForcedQuit(int clientID, String type, String tempBanLength, String reason)
@@ -173,12 +173,12 @@ public class NetProtocolHelper extends NetProtocol
                 typeInfo = "TempBan:" + tempBanLength;
                 break;
 
-            case "duplicateLogin":
+            case "duplicatelogin":
                 typeInfo = "DuplicateLogin";
                 break;
 
             default:
-                MCServer.pluginLog(Level.WARNING,
+                MCServer.bukkitLog(Level.WARNING,
                         "Unexpected message in NetProtocolHelper.clientForcedQuit: type == " + type);
                 return;
         }

@@ -45,7 +45,7 @@ public class NetClientOut implements Runnable
 
                 if (ShinyBridge.DEV_BUILD)
                 {
-                    MCServer.pluginLog(Level.INFO, msgOut);
+                    MCServer.bukkitLog(Level.INFO, msgOut);
                 }
             }
 
@@ -60,6 +60,11 @@ public class NetClientOut implements Runnable
         catch (InterruptedException e)
         {
             e.printStackTrace();
+        }
+
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("NetClientOut closing.");
         }
     }
 }

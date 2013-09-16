@@ -86,24 +86,22 @@ public class Account
             if (onlineLcUsersAccountMap.containsKey(usernameLc))
             {
                 isAlreadyLoggedIn = true;
-
                 int oldClientID = onlineLcUsersClientMap.get(usernameLc);
-                NetClientConnection.getClientMap().get(oldClientID).disconnectClient();
 
+                //informs previous connection that it is being force closed
                 NetProtocolHelper.clientForcedQuit(oldClientID, "DuplicateLogin", null,
                         "You have logged in from another client.");
 
-                /*//disconnect current session (must happen before account logout
-                int oldClientID = onlineLcUsersClientMap.get(usernameLc);
+                //closes in/out and removes NetClientConnection from the ClientMap
                 NetClientConnection.getClientMap().get(oldClientID).disconnectClient();
 
-                //log out current account
-                onlineLcUsersAccountMap.get(usernameLc).logout(false);*/
-
+                //log out current account (must happen after we get the oldClientID from the ClientMap)
+                onlineLcUsersAccountMap.get(usernameLc).logout(false);
             }
 
             //set account to the connection and return true
-            login(clientID, usernameLc, !isAlreadyLoggedIn);
+            //login(clientID, usernameLc, !isAlreadyLoggedIn);
+            login(clientID, usernameLc, true);
             return true;
         }
         else

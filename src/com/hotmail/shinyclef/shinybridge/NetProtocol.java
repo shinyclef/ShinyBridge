@@ -20,7 +20,10 @@ public class NetProtocol
     private static final String CHAT_MARKER = "*";
     private static final String CUSTOM_COMMAND_MARKER = "@";
     private static final String MC_COMMAND_MARKER = "/";
+    public static final String PING = "P";
+
     public static final String QUIT_MESSAGE = CUSTOM_COMMAND_MARKER + "Disconnect";
+    public static final String QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER = "Disconnect";
     public static final String QUIT_MESSAGE_UNEXPECTED = QUIT_MESSAGE + ":Unexpected";
     public static final String POISON_PILL_OUT = CUSTOM_COMMAND_MARKER + "PoisonPill";
 
@@ -56,6 +59,11 @@ public class NetProtocol
     /* Processes raw input as received from clients, identifying work type and delegating to appropriate method. */
     public static synchronized void processInput(String input, int clientID)
     {
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog(clientID + ": " + input);
+        }
+
         if (clientMap == null)
         {
             log.info("Map is null.");
@@ -65,6 +73,10 @@ public class NetProtocol
         //parse message type
         switch (input.substring(0, 1))
         {
+            case (PING):
+                processPing(clientID);
+                break;
+
             case CHAT_MARKER:
                 processClientChat(input, clientID);
                 break;
@@ -78,7 +90,7 @@ public class NetProtocol
                 break;
 
             default:
-                MCServer.pluginLog(Level.WARNING, "Unexpected input in NetProtocol.ProcessInput");
+                MCServer.bukkitLog(Level.WARNING, "Unexpected input in NetProtocol.ProcessInput");
                 break;
         }
     }
@@ -117,21 +129,24 @@ public class NetProtocol
         String command = input.substring(1);
         String[] args = command.split(":");
 
-        if (args[0].equals("Login"))
+        switch (args[0])
         {
-            NetProtocolHelper.loginRequest(clientID, args);
-        }
+            case "Login":
+                NetProtocolHelper.loginRequest(clientID, args);
+                break;
 
-        else if (args[0].equals(QUIT_MESSAGE.substring(1)))
-        {
-            NetProtocolHelper.clientQuit(clientID, args);
-        }
+            case QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER:
+                NetProtocolHelper.clientQuit(clientID, args);
+                break;
 
-        else if (args[0].equals("RequestPlayerList"))
-        {
-            NetProtocolHelper.processPlayerListRequest(clientID);
-        }
+            case "RequestPlayerList":
+                NetProtocolHelper.processPlayerListRequest(clientID);
+                break;
 
+            default:
+                MCServer.bukkitLog(Level.WARNING, "Unknown data format received from client.");
+                break;
+        }
     }
 
     /* Processes command data as send from clients. */
@@ -166,6 +181,12 @@ public class NetProtocol
         {
             sendToClient(clientID, ChatColor.RED + "That command is not available from RolyDPlus.", true);
         }
+    }
+
+    /* Echoes back pings. */
+    private static void processPing(int clientID)
+    {
+        //sendToClient(clientID, PING, false);
     }
 
 

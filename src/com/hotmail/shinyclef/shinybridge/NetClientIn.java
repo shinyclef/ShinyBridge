@@ -48,12 +48,19 @@ public class NetClientIn implements Runnable
         }
         catch (SocketException e)
         {
-            MCServer.bukkitLog("Unexpectedly lost connection: " + address);
+            MCServer.pluginLog("Unexpectedly lost connection: " + address);
             NetProtocol.processInput(NetProtocol.QUIT_MESSAGE_UNEXPECTED, clientID);
         }
         catch (IOException e)
         {
-            MCServer.bukkitLog("IO Exception (not a big deal).");
+            if (e.getMessage().equals("Read timed out"))
+            {
+                NetClientConnection.getClientMap().get(clientID).timeOut();
+            }
+            else
+            {
+                MCServer.pluginLog("IO Exception: " + e.getMessage());
+            }
         }
         finally
         {
@@ -70,6 +77,11 @@ public class NetClientIn implements Runnable
             {
                 //swallow
             }
+        }
+
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("NetClientIn closing.");
         }
     }
 }

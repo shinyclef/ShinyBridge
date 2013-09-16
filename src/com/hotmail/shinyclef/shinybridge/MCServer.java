@@ -81,12 +81,12 @@ public class MCServer extends ShinyBridge
         }
     }
 
-    public static synchronized void pluginLog(Level level, String msg)
+    public static synchronized void bukkitLog(Level level, String msg)
     {
         bukkitLog.log(level, msg);
     }
 
-    public static synchronized void bukkitLog(String msg)
+    public static synchronized void pluginLog(String msg)
     {
         pluginLog.info("R+: " + msg);
     }

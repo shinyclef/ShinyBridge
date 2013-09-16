@@ -36,7 +36,7 @@ public class ShinyBridge extends JavaPlugin
         plugin = this;
         log = this.getLogger();
 
-        //setup shinyBase
+        //setwwwwwup shinyBase
         Plugin base = Bukkit.getPluginManager().getPlugin("ShinyBase");
         if (base != null)
         {
