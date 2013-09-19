@@ -52,9 +52,33 @@ public class ScoreboardManager
         removeTeamsOnTeamsFile();
     }
 
+    public static void processServerPlayerJoin(Player player)
+    {
+        //ensure any potential scoreboard presence is removed
+        removeFromScoreboard(player.getName());
+
+        //send r+ scoreboard online packets to player, delay to make sure they are added to end of list
+        sendScoreboardListToNewPlayer(player);
+    }
+
+    public static void processServerPlayerQuit(Player player)
+    {
+        //check if play is logged into r+. If so, add to scoreboard.
+        if (Account.getLoggedInClientUsernamesSet().contains(player.getName()))
+        {
+            addToScoreboard(player.getName());
+        }
+    }
+
     public static void addToScoreboard(String playerName)
     {
         if (!scoreboardEnabled)
+        {
+            return;
+        }
+
+        //make sure player is not online on server to prevent duplicate names
+        if (s.getOfflinePlayer(playerName).isOnline())
         {
             return;
         }
@@ -95,6 +119,12 @@ public class ScoreboardManager
     public static void removeFromScoreboard(String playerName)
     {
         if (!scoreboardEnabled)
+        {
+            return;
+        }
+
+        //check if player is on scoreboard
+        if (!onlineTeamAndPacketMap.containsKey(playerName))
         {
             return;
         }

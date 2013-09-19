@@ -107,7 +107,7 @@ public class NetClientConnection
         }
     }
 
-    public void timeOutNotification()
+    public void timeOutConsoleNotification()
     {
         //get user ID (usually name)
         String ID;
@@ -120,19 +120,8 @@ public class NetClientConnection
             ID = account.getUserName();
         }
 
-        //broadcast timeout
+        //broadcast timeout to console
         MCServer.pluginLog(ID + " timed out.");
-        if (account != null)
-        {
-            account.logout(true);
-        }
-        else
-        {
-            if (ShinyBridge.DEV_BUILD)
-            {
-                MCServer.pluginLog("Caution: NetClientConnection.account == null. " + clientID);
-            }
-        }
     }
 
 

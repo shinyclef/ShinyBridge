@@ -76,7 +76,7 @@ public class NetClientIn implements Runnable
         {
             if (e.getMessage().equals("Read timed out"))
             {
-                NetClientConnection.getClientMap().get(clientID).timeOutNotification();
+                NetClientConnection.getClientMap().get(clientID).timeOutConsoleNotification();
 
                 if (ShinyBridge.DEV_BUILD)
                 {

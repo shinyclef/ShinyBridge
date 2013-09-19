@@ -1,8 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
-import com.hotmail.shinyclef.shinybridge.NetProtocol;
-import com.hotmail.shinyclef.shinybridge.NetProtocolHelper;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -61,8 +59,8 @@ public class EventListener implements Listener
             account.setRank(MCServer.getRank(e.getPlayer()));
         }
 
-        //send r+ scoreboard online packets to player, delay to make sure they are added to end of list
-        ScoreboardManager.sendScoreboardListToNewPlayer(e.getPlayer());
+        //inform ScoreBoard manager
+        ScoreboardManager.processServerPlayerJoin(e.getPlayer());
 
         //inform clients
         NetProtocolHelper.broadcastServerJoin(playerName);
@@ -73,6 +71,9 @@ public class EventListener implements Listener
     {
         //remove player from chatTagMap
         MCServer.removeFromPlayerChatTagMap(e.getPlayer());
+
+        //inform ScoreBoard manager
+        ScoreboardManager.processServerPlayerQuit(e.getPlayer());
 
         //inform clients
         String playerName = e.getPlayer().getName();
