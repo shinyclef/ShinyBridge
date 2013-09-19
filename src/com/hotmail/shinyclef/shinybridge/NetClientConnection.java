@@ -23,11 +23,15 @@ public class NetClientConnection
 
     //object vars
     private final Socket socket;
+    private Thread netClientInThread;
+    private Thread netClientOutThread;
+    private final NetClientIn netClientIn;
+    private final NetClientOut netClientOut;
+
     private final int clientID;
     private String ipAddress;
     private BlockingQueue<String> outQueue;
-    private final NetClientIn clientIn;
-    private final NetClientOut clientOut;
+
     private Account account;
     private boolean readyToCloseSockets;
 
@@ -40,8 +44,8 @@ public class NetClientConnection
         clientID = latestConnectionID;
         ipAddress = socket.getRemoteSocketAddress().toString();
         outQueue = new ArrayBlockingQueue<String>(50);
-        clientIn = new NetClientIn(this);
-        clientOut = new NetClientOut(this);
+        netClientIn = new NetClientIn(this);
+        netClientOut = new NetClientOut(this);
         account = null;
         readyToCloseSockets = false;
 
@@ -66,14 +70,25 @@ public class NetClientConnection
     constructing before the threads have access to it. Thread safety! */
     public void startThreads()
     {
-        new Thread(clientIn).start();
-        new Thread(clientOut).start();
+        netClientInThread = new Thread(netClientIn);
+        netClientOutThread = new Thread(netClientOut);
+        netClientInThread.start();
+        netClientOutThread.start();
     }
 
-    public void disconnectClient()
+    //this stops all client interaction threads,
+    public void disconnectClient(String type)
     {
         //shut down in/out and remove client from map
-        NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
+        //NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("NetClientConnection.disconnectClient has started. " + clientID);
+        }
+
+        netClientIn.disconnectTriggered();
+
+        netClientOutThread.interrupt();
         try
         {
             socket.close();
@@ -83,10 +98,16 @@ public class NetClientConnection
             //already closed
         }
 
+        NetProtocolHelper.clientAccountLogout(clientID, type);
         NetClientConnection.getClientMap().remove(clientID);
+
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("NetClientConnection.disconnectClient has finished. " + clientID);
+        }
     }
 
-    public void timeOut()
+    public void timeOutNotification()
     {
         //get user ID (usually name)
         String ID;
@@ -101,8 +122,17 @@ public class NetClientConnection
 
         //broadcast timeout
         MCServer.pluginLog(ID + " timed out.");
-        account.logout(true);
-        disconnectClient();
+        if (account != null)
+        {
+            account.logout(true);
+        }
+        else
+        {
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("Caution: NetClientConnection.account == null. " + clientID);
+            }
+        }
     }
 
 

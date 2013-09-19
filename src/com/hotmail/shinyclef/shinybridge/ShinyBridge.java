@@ -1,8 +1,9 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.hotmail.shinyclef.shinybase.ShinyBase;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
-import com.hotmail.shinyclef.shinybridge.NetConnectionDelegator;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.logging.Logger;
@@ -22,12 +24,14 @@ import java.util.logging.Logger;
 
 public class ShinyBridge extends JavaPlugin
 {
-    public static final boolean DEV_BUILD = true;
+    public static final boolean DEV_BUILD = false;
 
     private static ShinyBridge plugin;
     private static ShinyBridgeAPI shinyBridgeAPI;
     private static ShinyBaseAPI shinyBaseAPI;
+    private static ProtocolManager protocolManager;
     private static Logger log;
+    private static File teamsFile;
 
     @Override
     public void onEnable()
@@ -35,12 +39,24 @@ public class ShinyBridge extends JavaPlugin
         //assign variables
         plugin = this;
         log = this.getLogger();
+        boolean scoreboardEnabled = true;
 
-        //setwwwwwup shinyBase
+        //setup shinyBase
         Plugin base = Bukkit.getPluginManager().getPlugin("ShinyBase");
         if (base != null)
         {
             shinyBaseAPI = ((ShinyBase)base).getShinyBaseAPI();
+        }
+
+        //setup ProtocolLip
+        try
+        {
+            protocolManager = ProtocolLibrary.getProtocolManager();
+        }
+        catch (NoClassDefFoundError e)
+        {
+            log.info("WARNING! ProtocolLib not found! Scoreboard functionality disabled!");
+            scoreboardEnabled = false;
         }
 
         //command executor and event listener
@@ -48,13 +64,24 @@ public class ShinyBridge extends JavaPlugin
         CommandExecutor cmdExecutor = new CmdExecutor();
         getCommand("rolydplus").setExecutor(cmdExecutor);
 
-        //make sure config exists
+        //make sure config and teams.txt exist
         saveDefaultConfig();
+        teamsFile = new File(plugin.getDataFolder(), "teams.txt");
+        try
+        {
+            teamsFile.createNewFile(); //only create new if it doesn't exist
+        }
+        catch (IOException e)
+        {
+            log.info("WARNING! Error creating teams.txt. Scoreboard functionality disabled!");
+            scoreboardEnabled = false;
+        }
 
         //initialization components
+        MCServer.initialize(this);
         Database.prepareConnection(this);
         new Database.onPluginLoad().runTaskAsynchronously(plugin);
-        MCServer.initialize(this);
+        ScoreboardManager.initialise(this, protocolManager, teamsFile, scoreboardEnabled);
         PreProcessParser.initialize(shinyBaseAPI);
         initializeConnDelegator();
         shinyBridgeAPI = new ShinyBridgeAPI();

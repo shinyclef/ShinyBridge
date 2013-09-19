@@ -105,9 +105,9 @@ public class NetProtocolHelper extends NetProtocol
         String username = args[1];
         String password = args[2];
 
-        boolean isValidLogin = Account.validateLogin(clientID, username, password);
-        String loginReply = "@Login:" + isValidLogin;
-        sendToClient(clientID, loginReply, false);
+        String result = Account.validateLogin(clientID, username, password);
+        String loginResponse = "@Login:" + result;
+        sendToClient(clientID, loginResponse, false);
     }
 
     public static void processPlayerListRequest(int clientID)
@@ -129,14 +129,30 @@ public class NetProtocolHelper extends NetProtocol
         sendToClient(clientID, "@PlayerList:" +  masterList, false);
     }
 
-    public static void clientQuit(int clientID, String[] args)
+    public static void clientAccountLogout(int clientID, String[] args)
     {
         String type = args[1];
+        clientAccountLogout(clientID, type);
+    }
 
-        MCServer.pluginLog("clientQuit type: " + type);
+    public static void clientAccountLogout(int clientID, String type)
+    {
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("NetProtocolHelper.clientAccountLogout type: " + type);
+        }
+
+        //return if this client is not in map for some reason, perhaps already removed
+        if (!NetClientConnection.getClientMap().containsKey(clientID))
+        {
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("CAUTION: NetClientConnection is null in NetProtocolHelper.clientAccountLogout,");
+            }
+            return;
+        }
 
         //check if client is logged in and get account
-        //!!!! NetClientConnection.getClientMap().get(clientID) == null
         Account account = NetClientConnection.getClientMap().get(clientID).getAccount();
         boolean wasLoggedIn = false;
 
@@ -151,9 +167,6 @@ public class NetProtocolHelper extends NetProtocol
         {
             MCServer.pluginLog("Disconnected: " + NetClientConnection.getClientMap().get(clientID).getIpAddress());
         }
-
-        //finish disconnecting client
-        NetClientConnection.getClientMap().get(clientID).disconnectClient();
     }
 
     public static void clientForcedQuit(int clientID, String type, String tempBanLength, String reason)

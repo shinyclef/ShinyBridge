@@ -44,12 +44,12 @@ public class Database
 
     public static void printDebug(CommandSender sender)
     {
-        sender.sendMessage(ChatColor.BLUE + "Debug Info:");
+        sender.sendMessage(ChatColor.BLUE + "Database Debug Info:");
         for (Map.Entry<String, String> entry : debugMap.entrySet())
         {
             sender.sendMessage(ChatColor.AQUA + entry.getKey() + ": " + ChatColor.YELLOW + entry.getValue());
         }
-        sender.sendMessage(ChatColor.BLUE + "Please notify shinyclef if any values are not 'OK'.");
+        sender.sendMessage(ChatColor.BLUE + "Please notify shinyclef if any database values are not 'OK'.");
     }
 
     /* Prepares the database driver for use with connections. */

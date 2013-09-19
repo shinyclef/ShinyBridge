@@ -64,14 +64,14 @@ public class Account
         }
     }
 
-    public static boolean validateLogin(int clientID, String username, String password)
+    public static String validateLogin(int clientID, String username, String password)
     {
         String usernameLc = username.toLowerCase();
 
         //check if user is registered
         if(!accountListLCase.contains(usernameLc))
         {
-            return false;
+            return "Incorrect";
         }
 
         //validate user's password
@@ -92,22 +92,22 @@ public class Account
                 NetProtocolHelper.clientForcedQuit(oldClientID, "DuplicateLogin", null,
                         "You have logged in from another client.");
 
-                //closes in/out and removes NetClientConnection from the ClientMap
-                NetClientConnection.getClientMap().get(oldClientID).disconnectClient();
-
-                //log out current account (must happen after we get the oldClientID from the ClientMap)
-                onlineLcUsersAccountMap.get(usernameLc).logout(false);
+                //disconnect ClientConnection if necessary
+                if (NetClientConnection.getClientMap().containsKey(oldClientID))
+                {
+                    NetClientConnection.getClientMap().get(oldClientID).disconnectClient("Duplicate");
+                }
             }
 
-            //set account to the connection and return true
+            //set account to the connection and confirm successful login
             //login(clientID, usernameLc, !isAlreadyLoggedIn);
             login(clientID, usernameLc, true);
-            return true;
+            return "Correct";
         }
         else
         {
             //invalid login
-            return false;
+            return "Incorrect";
         }
     }
 
@@ -130,6 +130,9 @@ public class Account
             announceLogin(username);
         }
 
+        //add to scoreboard
+        ScoreboardManager.addToScoreboard(username);
+
         //set logged in values
         account.assignedClientID = clientID;
         account.isOnline = true;
@@ -148,6 +151,9 @@ public class Account
         {
             announceLogout(userName);
         }
+
+        //remove from scoreboard
+        ScoreboardManager.removeFromScoreboard(userName);
     }
 
     public static void announceLogin(String username)
@@ -164,8 +170,6 @@ public class Account
         //inform server
         MCServer.getPlugin().getServer().broadcastMessage(ChatColor.WHITE + username +
                 ChatColor.YELLOW + " left RolyDPlus!");
-
-        //inform clients
     }
 
     /* Creates a new r+ account. Command executor has taken care of validation. */

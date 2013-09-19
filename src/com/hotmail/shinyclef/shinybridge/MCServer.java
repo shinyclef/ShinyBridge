@@ -1,5 +1,8 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.comphenix.protocol.Packets;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
 import me.mahoutsukaii.plugins.banreport.BanReport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -19,10 +22,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
-import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -47,12 +53,14 @@ public class MCServer extends ShinyBridge
 
     private static List<String> commandWhiteList;
 
-    public static void initialize(ShinyBridge thePlugin)
+    public static void initialize(ShinyBridge plugin)
     {
-        p = thePlugin;
+        p = plugin;
         s = p.getServer();
+
         bukkitLog = Bukkit.getLogger();
         pluginLog = p.getLogger();
+
         playerChatTagMap = new HashMap<String, String>();
         commandWhiteList = new ArrayList<String>();
         reloadCommandWhiteList();
@@ -192,24 +200,54 @@ public class MCServer extends ShinyBridge
 
     public static String getColouredRankString(Account.Rank rank)
     {
-        String rankTag = "";
-        if (rank.equals(Account.Rank.GM))
+        String rankColour = getRankColour(rank);
+
+        switch (rank)
         {
-            rankTag = ChatColor.RED + "[GM] ";
+            case GM:
+                return rankColour + "[GM] ";
+
+            case MOD:
+                return rankColour + "[Mod] ";
+
+            case EXPERT:
+                return rankColour + "[Exp] ";
+
+            case VIP:
+                return rankColour + "[VIP] ";
+
+            default:
+                if (ShinyBridge.DEV_BUILD)
+                {
+                    pluginLog("WARNING! Default case triggered in MCServer.getColouredRankString.");
+                }
+                return "";
         }
-        else if (rank.equals(Account.Rank.MOD))
+    }
+
+    public static String getRankColour(Account.Rank rank)
+    {
+        switch (rank)
         {
-            rankTag = ChatColor.GREEN + "[Mod] ";
+            case GM:
+                return ChatColor.RED + "";
+
+            case MOD:
+                return ChatColor.GREEN + "";
+
+            case EXPERT:
+                return ChatColor.AQUA + "";
+
+            case VIP:
+                return ChatColor.YELLOW + "";
+
+            default:
+                if (ShinyBridge.DEV_BUILD)
+                {
+                    pluginLog("WARNING! Default case triggered in MCServer.getRankColour.");
+                }
+            return "";
         }
-        else if (rank.equals(Account.Rank.EXPERT))
-        {
-            rankTag = ChatColor.AQUA + "[Exp] ";
-        }
-        else if (rank.equals(Account.Rank.VIP))
-        {
-            rankTag = ChatColor.DARK_PURPLE + "[VIP] ";
-        }
-        return rankTag;
     }
 
     public static boolean isServerOnline(String playerName)

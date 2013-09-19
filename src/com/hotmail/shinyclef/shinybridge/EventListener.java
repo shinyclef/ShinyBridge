@@ -61,6 +61,9 @@ public class EventListener implements Listener
             account.setRank(MCServer.getRank(e.getPlayer()));
         }
 
+        //send r+ scoreboard online packets to player, delay to make sure they are added to end of list
+        ScoreboardManager.sendScoreboardListToNewPlayer(e.getPlayer());
+
         //inform clients
         NetProtocolHelper.broadcastServerJoin(playerName);
     }

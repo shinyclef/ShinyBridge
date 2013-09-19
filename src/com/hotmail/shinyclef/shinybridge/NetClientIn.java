@@ -17,6 +17,7 @@ public class NetClientIn implements Runnable
     private Socket socket;
     private int clientID;
     private String address = "0.0.0.0";
+    private volatile boolean disconnectAlreadyTriggered = false;
 
     public NetClientIn(NetClientConnection clientConn)
     {
@@ -27,7 +28,7 @@ public class NetClientIn implements Runnable
     @Override
     public void run()
     {
-        BufferedReader inFromClient = null;
+        BufferedReader inFromClient;
         try
         {
             inFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
@@ -40,48 +41,68 @@ public class NetClientIn implements Runnable
                 msgIn = inFromClient.readLine();
                 if (msgIn == null)
                 {
+                    if (ShinyBridge.DEV_BUILD)
+                    {
+                        MCServer.pluginLog("CAUTION! MsgIn == null in NetClientIn");
+                    }
                     break;
                 }
                 NetProtocol.processInput(msgIn, clientID);
+
+                if (ShinyBridge.DEV_BUILD)
+                {
+                    MCServer.pluginLog("In: " + msgIn);
+                }
             }
             while (!msgIn.startsWith(NetProtocol.QUIT_MESSAGE));
+            if (msgIn != null && msgIn.startsWith(NetProtocol.QUIT_MESSAGE))
+            {
+                disconnectTriggered(); //do this now because other thread may be too slow
+            }
         }
         catch (SocketException e)
         {
-            MCServer.pluginLog("Unexpectedly lost connection: " + address);
-            NetProtocol.processInput(NetProtocol.QUIT_MESSAGE_UNEXPECTED, clientID);
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("NetClientIn closing with disconnectAlreadyTriggered. " + clientID);
+            }
+
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("NetClientIn (SocketException). " + clientID);
+            }
         }
         catch (IOException e)
         {
             if (e.getMessage().equals("Read timed out"))
             {
-                NetClientConnection.getClientMap().get(clientID).timeOut();
+                NetClientConnection.getClientMap().get(clientID).timeOutNotification();
+
+                if (ShinyBridge.DEV_BUILD)
+                {
+                    MCServer.pluginLog("NetClientIn (IOException Timeout). " + clientID);
+                }
             }
             else
             {
                 MCServer.pluginLog("IO Exception: " + e.getMessage());
             }
         }
-        finally
+
+        //after everything else, disconnect client (if it hasn't already happened)
+        if (!disconnectAlreadyTriggered)
         {
-            try
-            {
-                //user disconnected close connection
-                if (inFromClient != null)
-                {
-                    inFromClient.close();
-                }
-                socket.close();
-            }
-            catch (IOException e)
-            {
-                //swallow
-            }
+            NetClientConnection.getClientMap().get(clientID).disconnectClient("Unexpected");
         }
 
         if (ShinyBridge.DEV_BUILD)
         {
-            MCServer.pluginLog("NetClientIn closing.");
+            MCServer.pluginLog("NetClientIn closing (End of class). " + clientID);
         }
+    }
+
+    public synchronized void disconnectTriggered()
+    {
+        disconnectAlreadyTriggered = true;
     }
 }

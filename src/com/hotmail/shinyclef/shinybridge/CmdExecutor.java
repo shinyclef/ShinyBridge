@@ -1,7 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +16,6 @@ public class CmdExecutor implements CommandExecutor
 {
     public static final String NO_PERM = ChatColor.RED + "You do not have permission to do that.";
     private static ShinyBridge plugin;
-
 
     public CmdExecutor()
     {
@@ -49,6 +47,10 @@ public class CmdExecutor implements CommandExecutor
 
                 case "reloadcommandwhitelist":
                     return reloadCommandWhiteList(sender);
+
+                case "test":
+                    //ScoreboardManager.addToScoreboard(args[1]);
+                    return true;
             }
 
         }
@@ -276,6 +278,12 @@ public class CmdExecutor implements CommandExecutor
             return true;
         }
 
+        sender.sendMessage(ChatColor.BLUE + "General Debug Info:");
+        sender.sendMessage(ChatColor.AQUA + "ClientConnections: " +
+                ChatColor.YELLOW + NetClientConnection.getClientMap().size());
+        sender.sendMessage(ChatColor.AQUA + "Online Accounts: " +
+                ChatColor.YELLOW + Account.getOnlineLcUsersAccountMap().size());
+        ScoreboardManager.scoreboardDebug(sender);
         Database.printDebug(sender);
         return true;
     }

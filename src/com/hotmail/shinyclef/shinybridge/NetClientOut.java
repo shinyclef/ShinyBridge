@@ -45,7 +45,7 @@ public class NetClientOut implements Runnable
 
                 if (ShinyBridge.DEV_BUILD)
                 {
-                    MCServer.bukkitLog(Level.INFO, msgOut);
+                    MCServer.pluginLog("Out: " + msgOut);
                 }
             }
 
@@ -55,16 +55,22 @@ public class NetClientOut implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("NetClientOut IOException. Probably already closed socket.");
+            }
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace();
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("NetClientOut InterruptedException. Probably intentional.");
+            }
         }
 
         if (ShinyBridge.DEV_BUILD)
         {
-            MCServer.pluginLog("NetClientOut closing.");
+            MCServer.pluginLog("NetClientOut closing (End of class).");
         }
     }
 }

@@ -45,11 +45,23 @@ public class NetProtocol
 
         try
         {
+            if (ShinyBridge.DEV_BUILD && NetClientConnection.getClientMap().get(clientID) == null)
+            {
+                MCServer.pluginLog("Caution: Sending to a null NetClientConnection in sendToClient.");
+            }
+
             NetClientConnection.getClientMap().get(clientID).getOutQueue().put(output);
         }
         catch (InterruptedException e)
         {
             //nothing to do?
+        }
+        catch (NullPointerException e)
+        {
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog(e.getMessage());
+            }
         }
     }
 
@@ -59,11 +71,6 @@ public class NetProtocol
     /* Processes raw input as received from clients, identifying work type and delegating to appropriate method. */
     public static synchronized void processInput(String input, int clientID)
     {
-        if (ShinyBridge.DEV_BUILD)
-        {
-            MCServer.pluginLog(clientID + ": " + input);
-        }
-
         if (clientMap == null)
         {
             log.info("Map is null.");
@@ -136,7 +143,7 @@ public class NetProtocol
                 break;
 
             case QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER:
-                NetProtocolHelper.clientQuit(clientID, args);
+                NetClientConnection.getClientMap().get(clientID).disconnectClient("Closing");
                 break;
 
             case "RequestPlayerList":
@@ -186,7 +193,7 @@ public class NetProtocol
     /* Echoes back pings. */
     private static void processPing(int clientID)
     {
-        //sendToClient(clientID, PING, false);
+        sendToClient(clientID, PING, false);
     }
 
 
