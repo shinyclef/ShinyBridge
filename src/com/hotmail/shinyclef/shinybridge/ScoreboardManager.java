@@ -80,6 +80,10 @@ public class ScoreboardManager
         //make sure player is not online on server to prevent duplicate names
         if (s.getOfflinePlayer(playerName).isOnline())
         {
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("Add to scoreboard triggered while player is online.");
+            }
             return;
         }
 

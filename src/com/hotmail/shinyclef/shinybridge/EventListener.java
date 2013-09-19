@@ -2,6 +2,7 @@ package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,11 +70,21 @@ public class EventListener implements Listener
     @EventHandler
     public void playerQuit(PlayerQuitEvent e)
     {
-        //remove player from chatTagMap
-        MCServer.removeFromPlayerChatTagMap(e.getPlayer());
+        final Player player = e.getPlayer();
 
-        //inform ScoreBoard manager
-        ScoreboardManager.processServerPlayerQuit(e.getPlayer());
+        //remove player from chatTagMap
+        MCServer.removeFromPlayerChatTagMap(player);
+
+        //inform ScoreBoard manager after player is fully gone
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                ScoreboardManager.processServerPlayerQuit(player);
+            }
+        }, 4);
+
 
         //inform clients
         String playerName = e.getPlayer().getName();

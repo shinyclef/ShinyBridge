@@ -1,4 +1,4 @@
-depend: [ShinyBase]
+depend: [ShinyBase, Vault]
 softdepend: [BanReport, ProtocolLib]
 name: ShinyBridge
 main: com.hotmail.shinyclef.shinybridge.ShinyBridge
