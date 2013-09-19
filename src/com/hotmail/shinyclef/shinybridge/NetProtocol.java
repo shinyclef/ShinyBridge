@@ -169,11 +169,15 @@ public class NetProtocol
         String[] args = commandLine.split(" ");
         String baseCommand = args[0].toLowerCase();
 
+        //get clientPlayer
+        MCServer.ClientPlayer clientPlayer = NetClientConnection.getClientMap().get(clientID)
+                .getAccount().getClientPlayer();
+
+        //inform console
+        MCServer.bukkitLog(Level.INFO, clientPlayer.getName() + " issued RolyDPlus command: /" + commandLine);
+
         if (MCServer.getCommandWhiteList().contains(baseCommand))
         {
-            MCServer.ClientPlayer clientPlayer = NetClientConnection.getClientMap().get(clientID)
-                    .getAccount().getClientPlayer();
-
             PlayerCommandPreprocessEvent e = new PlayerCommandPreprocessEvent(clientPlayer, "/" + commandLine);
             s.getPluginManager().callEvent(e);
 
@@ -183,9 +187,6 @@ public class NetProtocol
             }
 
             s.dispatchCommand(clientPlayer, commandLine);
-
-            //inform console
-            MCServer.bukkitLog(Level.INFO, clientPlayer.getName() + " issued RolyDPlus command: /" + commandLine);
         }
         else
         {
