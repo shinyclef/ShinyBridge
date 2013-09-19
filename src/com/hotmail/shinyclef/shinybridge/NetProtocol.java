@@ -183,6 +183,9 @@ public class NetProtocol
             }
 
             s.dispatchCommand(clientPlayer, commandLine);
+
+            //inform console
+            MCServer.bukkitLog(Level.INFO, clientPlayer.getName() + " issued RolyDPlus command: /" + commandLine);
         }
         else
         {
