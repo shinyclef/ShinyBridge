@@ -74,6 +74,10 @@ public class ScoreboardManager
     {
         if (!scoreboardEnabled)
         {
+            if (ShinyBridge.DEV_BUILD)
+            {
+                MCServer.pluginLog("Add to scoreboard triggered while scoreboard not enabled.");
+            }
             return;
         }
 
@@ -85,6 +89,11 @@ public class ScoreboardManager
                 MCServer.pluginLog("Add to scoreboard triggered while player is online.");
             }
             return;
+        }
+
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("Add to scoreboard running with name: " + playerName);
         }
 
         //split first character off the name for prefix

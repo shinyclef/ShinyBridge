@@ -2,7 +2,7 @@ depend: [ShinyBase, Vault]
 softdepend: [BanReport, ProtocolLib]
 name: ShinyBridge
 main: com.hotmail.shinyclef.shinybridge.ShinyBridge
-version: 0.1.0
+version: 1.0.1
 commands:
     rolydplus:
         description: Gives access to bridge commands.

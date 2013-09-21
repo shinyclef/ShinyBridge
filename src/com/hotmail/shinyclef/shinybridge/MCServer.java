@@ -217,10 +217,6 @@ public class MCServer extends ShinyBridge
                 return rankColour + "[VIP] ";
 
             default:
-                if (ShinyBridge.DEV_BUILD)
-                {
-                    pluginLog("WARNING! Default case triggered in MCServer.getColouredRankString.");
-                }
                 return "";
         }
     }
