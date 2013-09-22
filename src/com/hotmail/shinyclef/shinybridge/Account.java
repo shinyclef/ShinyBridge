@@ -23,7 +23,6 @@ public class Account
     private String passwordHash;
     private Rank rank;
     private String chatTag;
-    private CommandSender commandSender;
     private MCServer.ClientPlayer clientPlayer;
 
     private boolean isOnline;
@@ -71,7 +70,7 @@ public class Account
         //check if user is registered
         if(!accountListLCase.contains(usernameLc))
         {
-            return "Incorrect";
+            return NetProtocolHelper.NO_USER;
         }
 
         //validate user's password
@@ -95,19 +94,19 @@ public class Account
                 //disconnect ClientConnection if necessary
                 if (NetClientConnection.getClientMap().containsKey(oldClientID))
                 {
-                    NetClientConnection.getClientMap().get(oldClientID).disconnectClient("Duplicate");
+                    NetClientConnection.getClientMap().get(oldClientID).disconnectClient(NetProtocolHelper.DUPLICATE);
                 }
             }
 
             //set account to the connection and confirm successful login
             //login(clientID, usernameLc, !isAlreadyLoggedIn);
             login(clientID, usernameLc, true);
-            return "Correct";
+            return NetProtocolHelper.CORRECT;
         }
         else
         {
             //invalid login
-            return "Incorrect";
+            return NetProtocolHelper.BAD_PASSWORD;
         }
     }
 

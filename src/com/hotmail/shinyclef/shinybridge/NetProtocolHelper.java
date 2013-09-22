@@ -18,6 +18,14 @@ public class NetProtocolHelper extends NetProtocol
     private static Server s = p.getServer();
     private static Logger log = p.getLogger();
 
+    public static final String CORRECT = "Correct";
+    public static final String NO_USER = "Incorrect:NoUser";
+    public static final String BAD_PASSWORD = "Incorrect:UserPass";
+    public static final String OUT_OF_DATE = "Incorrect:OutOfDate";
+    public static final String DUPLICATE = "Duplicate";
+
+
+
     public static void broadcastRawToClients(String message, boolean isChat)
     {
         for (NetClientConnection client : NetClientConnection.getClientMap().values())
@@ -102,12 +110,21 @@ public class NetProtocolHelper extends NetProtocol
 
     public static void loginRequest(int clientID, String[] args)
     {
-        String username = args[1];
-        String password = args[2];
+        String version = args[1];
+        String username = args[2];
+        String password = args[3];
+        String loginResponse;
 
-        String result = Account.validateLogin(clientID, username, password);
-        String loginResponse = "@Login:" + result;
-        sendToClient(clientID, loginResponse, false);
+        if (!NetClientConnection.clientIsUpToDate(version))
+        {
+            loginResponse = OUT_OF_DATE;
+        }
+        else
+        {
+            loginResponse = Account.validateLogin(clientID, username, password);
+        }
+
+        sendToClient(clientID, "@Login:" + loginResponse, false);
     }
 
     public static void processPlayerListRequest(int clientID)

@@ -47,12 +47,11 @@ public class NetClientIn implements Runnable
                     }
                     break;
                 }
-                NetProtocol.processInput(msgIn, clientID);
-
                 if (ShinyBridge.DEV_BUILD)
                 {
                     MCServer.pluginLog("In: " + msgIn);
                 }
+                NetProtocol.processInput(msgIn, clientID);
             }
             while (!msgIn.startsWith(NetProtocol.QUIT_MESSAGE));
             if (msgIn != null && msgIn.startsWith(NetProtocol.QUIT_MESSAGE))

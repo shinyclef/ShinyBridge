@@ -124,6 +124,33 @@ public class NetClientConnection
         MCServer.pluginLog(ID + " timed out.");
     }
 
+    public static boolean clientIsUpToDate(String connectingVersion)
+    {
+        String[] verString = connectingVersion.split("\\.");
+        int[] serverVer = ShinyBridge.getVersion();
+        int[] clientVer = new int[3];
+        clientVer[0] = Integer.parseInt(verString[0]);
+        clientVer[1] = Integer.parseInt(verString[1]);
+        clientVer[2] = Integer.parseInt(verString[2]);
+
+        if (serverVer[0] > clientVer[0])
+        {
+            return false;
+        }
+
+        if (serverVer[1] > clientVer[1])
+        {
+            return false;
+        }
+
+        if (serverVer[2] > clientVer[2])
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 
     /* Setters */
 
