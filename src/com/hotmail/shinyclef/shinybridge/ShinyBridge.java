@@ -25,8 +25,9 @@ import java.util.logging.Logger;
 public class ShinyBridge extends JavaPlugin
 {
     public static final boolean DEV_BUILD = false;
+    private static final String SERVER_VERSION = "1.0.1";
     private static final String SUPPORTED_CLIENT_VERSION = "1.0.1";
-    private static int[] version;
+    private static int[] versionParts;
 
     private static ShinyBridge plugin;
     private static ShinyBridgeAPI shinyBridgeAPI;
@@ -39,11 +40,11 @@ public class ShinyBridge extends JavaPlugin
     public void onEnable()
     {
         //assign variables
-        version = new int[3];
+        versionParts = new int[3];
         String[] versionStrings = SUPPORTED_CLIENT_VERSION.split("\\.");
-        version[0] = Integer.parseInt(versionStrings[0]);
-        version[1] = Integer.parseInt(versionStrings[1]);
-        version[2] = Integer.parseInt(versionStrings[2]);
+        versionParts[0] = Integer.parseInt(versionStrings[0]);
+        versionParts[1] = Integer.parseInt(versionStrings[1]);
+        versionParts[2] = Integer.parseInt(versionStrings[2]);
 
         plugin = this;
         log = this.getLogger();
@@ -142,6 +143,6 @@ public class ShinyBridge extends JavaPlugin
 
     public static int[] getVersion()
     {
-        return version;
+        return versionParts;
     }
 }
