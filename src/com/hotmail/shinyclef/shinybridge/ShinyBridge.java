@@ -34,7 +34,6 @@ public class ShinyBridge extends JavaPlugin
     private static ShinyBaseAPI shinyBaseAPI;
     private static ProtocolManager protocolManager;
     private static Logger log;
-    private static File teamsFile;
 
     @Override
     public void onEnable()
@@ -75,7 +74,7 @@ public class ShinyBridge extends JavaPlugin
 
         //make sure config and teams.txt exist
         saveDefaultConfig();
-        teamsFile = new File(plugin.getDataFolder(), "teams.txt");
+        File teamsFile = new File(plugin.getDataFolder(), "teams.txt");
         try
         {
             teamsFile.createNewFile(); //only create new if it doesn't exist
