@@ -77,7 +77,7 @@ public class NetClientConnection
     }
 
     //this stops all client interaction threads,
-    public void disconnectClient(String type)
+    public void disconnectClient(String logReason)
     {
         //shut down in/out and remove client from map
         //NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
@@ -98,7 +98,7 @@ public class NetClientConnection
             //already closed
         }
 
-        NetProtocolHelper.clientAccountLogout(clientID, type);
+        NetProtocolHelper.clientAccountLogout(clientID, logReason);
         NetClientConnection.getClientMap().remove(clientID);
 
         if (ShinyBridge.DEV_BUILD)

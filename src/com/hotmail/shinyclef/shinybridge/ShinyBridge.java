@@ -35,6 +35,9 @@ public class ShinyBridge extends JavaPlugin
     private static ProtocolManager protocolManager;
     private static Logger log;
 
+    private ServerSocket serverSocket;
+    private boolean acceptingConnections;
+
     @Override
     public void onEnable()
     {
@@ -91,7 +94,7 @@ public class ShinyBridge extends JavaPlugin
         new Database.onPluginLoad().runTaskAsynchronously(plugin);
         ScoreboardManager.initialise(this, protocolManager, teamsFile, scoreboardEnabled);
         PreProcessParser.initialize(shinyBaseAPI);
-        initializeConnDelegator();
+        startAcceptingClients();
         shinyBridgeAPI = new ShinyBridgeAPI();
 
         //add all online players to the chatTagMap
@@ -107,10 +110,28 @@ public class ShinyBridge extends JavaPlugin
         //send disconnect to all clients
     }
 
+    public void stopAcceptingClients()
+    {
+        try
+        {
+            serverSocket.close();
+        }
+        catch (IOException e)
+        {
+            //already closed
+        }
+        acceptingConnections = false;
+    }
+
+    public void startAcceptingClients()
+    {
+        initializeConnDelegator();
+        acceptingConnections = true;
+    }
+
     private void initializeConnDelegator()
     {
         int port = plugin.getConfig().getInt("Server.Port");
-        ServerSocket serverSocket;
 
         try
         {
@@ -143,5 +164,10 @@ public class ShinyBridge extends JavaPlugin
     public static int[] getVersion()
     {
         return versionParts;
+    }
+
+    public boolean isAcceptingConnections()
+    {
+        return acceptingConnections;
     }
 }

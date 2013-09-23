@@ -34,6 +34,7 @@ public class CmdExecutor implements CommandExecutor
 
             String subCommand = args[0].toLowerCase();
 
+            /* Commands "register" and "changepassword" are in rPlusParser below. */
             switch (subCommand)
             {
                 case "help":
@@ -42,8 +43,20 @@ public class CmdExecutor implements CommandExecutor
                 case "unregister":
                     return unregister(sender, args);
 
+                case "inv":
+                    return invisible(sender, args);
+
                 case "debug":
                     return debug(sender);
+
+                case "scoreboard":
+                    return scoreboard(sender, args);
+
+                case "stop":
+                    return stop(sender, args);
+
+                case "start":
+                    return start(sender, args);
 
                 case "reloadcommandwhitelist":
                     return reloadCommandWhiteList(sender);
@@ -65,11 +78,14 @@ public class CmdExecutor implements CommandExecutor
             case "register":
                 register(e, sender, args);
                 break;
+
             case "changepassword":
                 changePassword(e, sender, args);
                 break;
         }
     }
+
+    /* Command logic */
 
     public static void register(PlayerCommandPreprocessEvent e,
                                 CommandSender sender, String[] args)
@@ -220,22 +236,6 @@ public class CmdExecutor implements CommandExecutor
 
     }
 
-    private boolean lockdown(CommandSender sender, String[] args)
-    {
-        if (!sender.hasPermission("rolyd.mod"))
-        {
-            sender.sendMessage(NO_PERM);
-            return true;
-        }
-
-        if (args.length != 1)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     private boolean showHelp(CommandSender sender, String[] args)
     {
         sender.sendMessage(ChatColor.AQUA + "Commands are accessible with /RolyDPlus, /rplus, or /r+. Eg. '/r+ help'.");
@@ -255,6 +255,112 @@ public class CmdExecutor implements CommandExecutor
             sender.sendMessage(ChatColor.AQUA + "reloadcommandwhitelist" + ChatColor.YELLOW +
                     " - Used after the command white list has been altered in the config file.");
         }
+        return true;
+    }
+
+    private boolean invisible(CommandSender sender, String[] args)
+    {
+
+        return true;
+    }
+
+    private boolean scoreboard(CommandSender sender, String[] args)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(NO_PERM);
+        }
+
+        if (args.length < 2)
+        {
+            return false;
+        }
+
+        switch (args[1].toLowerCase())
+        {
+            case "enable":
+                ScoreboardManager.enableScoreboardFeature();
+                sender.sendMessage(ChatColor.YELLOW + "RolyDPlus usernames will no longer appear in scoreboard.");
+                break;
+
+            case "disable":
+                ScoreboardManager.disableScoreboardFeature();
+                sender.sendMessage(ChatColor.YELLOW + "RolyDPlus usernames will now appear in scoreboard");
+                break;
+        }
+
+        /* Commands with three args */
+        if (args.length < 3)
+        {
+            return false;
+        }
+
+        switch (args[1].toLowerCase())
+        {
+            case "add":
+                ScoreboardManager.addToScoreboard(args[2]);
+                break;
+
+            case "remove":
+                ScoreboardManager.removeFromScoreboard(args[2].toLowerCase());
+                break;
+
+            default:
+                return false;
+        }
+
+        return true;
+    }
+
+    private boolean stop(CommandSender sender, String[] args)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(NO_PERM);
+            return true;
+        }
+
+        if (args.length != 1)
+        {
+            return false;
+        }
+
+        //stop accepting clients
+        plugin.stopAcceptingClients();
+
+        //go through each client and disconnect
+        for (NetClientConnection client : NetClientConnection.getClientMap().values())
+        {
+            client.disconnectClient("lockdown");
+        }
+
+        //user feedback
+        sender.sendMessage(ChatColor.YELLOW +
+                "The RolyDPlus service has stopped and is no longer accepting client connections. Type " +
+                ChatColor.GOLD + "/r+ start" + ChatColor.YELLOW + " to restart.");
+
+        return true;
+    }
+
+    private boolean start(CommandSender sender, String[] args)
+    {
+        if (!sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(NO_PERM);
+            return true;
+        }
+
+        if (args.length != 1)
+        {
+            return false;
+        }
+
+        plugin.stopAcceptingClients();
+
+        //user feedback
+        sender.sendMessage(ChatColor.YELLOW +
+                "The RolyDPlus service has started and is now accepting client connections.");
+
         return true;
     }
 

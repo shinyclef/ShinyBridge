@@ -49,7 +49,7 @@ public class PreProcessParser
         }
     }
 
-    /* Handles bans and tempbans. */
+    /* Handles bans and tempbans. Runs 'after' the command has been completed. */
     public static void banPostProcess(String command, CommandSender sender, String[] args)
     {
         //do nothing if user doesn't have perm
@@ -74,7 +74,7 @@ public class PreProcessParser
             return;
         }
 
-        /* Note: From this point, we can assume a correct command! */
+        /* Note: From this point, we can assume a correct command with a banned user. */
 
         //check if user has an r+ account
         Account account = Account.getAccountMap().get(userNameLc);

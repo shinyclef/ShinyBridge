@@ -28,6 +28,7 @@ import java.util.*;
 
 public class ScoreboardManager
 {
+    private static boolean scoreboardFunctional = true;
     private static boolean scoreboardEnabled = true;
     private static ShinyBridge p;
     private static Server s;
@@ -46,7 +47,7 @@ public class ScoreboardManager
         s = plugin.getServer();
         ScoreboardManager.protocolManager = protocolManager;
         onlineTeamAndPacketMap = new LinkedHashMap<>();
-        ScoreboardManager.scoreboardEnabled = scoreboardEnabled;
+        ScoreboardManager.scoreboardFunctional = scoreboardEnabled;
         ScoreboardManager.teamsFile = teamsFile;
         scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         removeTeamsOnTeamsFile();
@@ -72,7 +73,7 @@ public class ScoreboardManager
 
     public static void addToScoreboard(String playerName)
     {
-        if (!scoreboardEnabled)
+        if (!scoreboardFunctional || !scoreboardEnabled)
         {
             if (ShinyBridge.DEV_BUILD)
             {
@@ -131,19 +132,29 @@ public class ScoreboardManager
 
     public static void removeFromScoreboard(String playerName)
     {
-        if (!scoreboardEnabled)
+        if (!scoreboardFunctional || !scoreboardEnabled)
         {
             return;
         }
 
         //check if player is on scoreboard
-        if (!onlineTeamAndPacketMap.containsKey(playerName))
+        String foundPlayer = null;
+        for (String name : onlineTeamAndPacketMap.keySet())
+        {
+            if (playerName.equalsIgnoreCase(name))
+            {
+                foundPlayer = name;
+                break;
+            }
+        }
+
+        if (foundPlayer == null)
         {
             return;
         }
 
         //get the nameRemainder that's registered with scoreboard
-        String nameRemainder = playerName.substring(1);
+        String nameRemainder = foundPlayer.substring(1);
 
         //get the packet
         PacketContainer packet = createScoreboardRemovePacket(nameRemainder);
@@ -155,7 +166,7 @@ public class ScoreboardManager
         }
 
         //remove this player from the onlineTeamAndPacketMap
-        onlineTeamAndPacketMap.remove(playerName);
+        onlineTeamAndPacketMap.remove(foundPlayer);
 
         //remove the team from scoreboard
         scoreboard.getTeam(nameRemainder).unregister();
@@ -164,9 +175,37 @@ public class ScoreboardManager
         updateTeamsListFile();
     }
 
+    public static void removeAllFromScoreboard()
+    {
+        if (!scoreboardFunctional || !scoreboardEnabled)
+        {
+            return;
+        }
+
+        for (String name : onlineTeamAndPacketMap.keySet())
+        {
+            removeFromScoreboard(name);
+        }
+    }
+
+    public static void disableScoreboardFeature()
+    {
+        scoreboardEnabled = false;
+        removeAllFromScoreboard();
+    }
+
+    public static void enableScoreboardFeature()
+    {
+        scoreboardEnabled = true;
+        for (String name : Account.getLoggedInClientUsernamesSet())
+        {
+            addToScoreboard(name);
+        }
+    }
+
     public static void sendScoreboardListToNewPlayer(final Player player)
     {
-        if (!scoreboardEnabled)
+        if (!scoreboardFunctional || !scoreboardEnabled)
         {
             return;
         }
@@ -229,7 +268,7 @@ public class ScoreboardManager
         {
             MCServer.pluginLog("WARNING! IOException in ScoreboardManager.removeTeamsOnTeamsFile. " +
                     "Scoreboard functionality disabled! Exception: " + e.getMessage());
-            ScoreboardManager.scoreboardEnabled = false;
+            ScoreboardManager.scoreboardFunctional = false;
             return;
         }
 
