@@ -1,8 +1,5 @@
 package com.hotmail.shinyclef.shinybridge;
 
-import com.comphenix.protocol.Packets;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
 import me.mahoutsukaii.plugins.banreport.BanReport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -22,13 +19,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -1245,10 +1238,10 @@ public class MCServer extends ShinyBridge
             return null;
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public World getWorld()
         {
-            return null;
+            return s.getWorld("world");
         }
 
         @Override
