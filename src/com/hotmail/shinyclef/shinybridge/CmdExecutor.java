@@ -6,6 +6,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.util.logging.Level;
+
 /**
  * Author: Shinyclef
  * Date: 12/07/13
@@ -325,6 +327,13 @@ public class CmdExecutor implements CommandExecutor
             return false;
         }
 
+        //check if service is already stopped
+        if (!ShinyBridge.isAcceptingConnections())
+        {
+            sender.sendMessage(ChatColor.RED + "RolyDPlus is already stopped.");
+            return true;
+        }
+
         //stop accepting clients
         plugin.stopAcceptingClients();
 
@@ -338,6 +347,10 @@ public class CmdExecutor implements CommandExecutor
         sender.sendMessage(ChatColor.YELLOW +
                 "The RolyDPlus service has stopped and is no longer accepting client connections. Type " +
                 ChatColor.GOLD + "/r+ start" + ChatColor.YELLOW + " to restart.");
+
+        //console feedback
+        MCServer.bukkitLog(Level.INFO, "ATTENTION: RolyDPlus has been stopped by " + sender.getName() +
+                ". Clients can no longer connect to the r+ service.");
 
         return true;
     }
@@ -355,11 +368,22 @@ public class CmdExecutor implements CommandExecutor
             return false;
         }
 
-        plugin.stopAcceptingClients();
+        //check if service is already running
+        if (ShinyBridge.isAcceptingConnections())
+        {
+            sender.sendMessage(ChatColor.RED + "RolyDPlus is already accepting connections.");
+            return true;
+        }
+
+        plugin.startAcceptingClients();
 
         //user feedback
         sender.sendMessage(ChatColor.YELLOW +
                 "The RolyDPlus service has started and is now accepting client connections.");
+
+        //console feedback
+        MCServer.bukkitLog(Level.INFO, "ATTENTION: RolyDPlus has been started by " + sender.getName() +
+                ". Clients can once again connect to the r+ service.");
 
         return true;
     }
