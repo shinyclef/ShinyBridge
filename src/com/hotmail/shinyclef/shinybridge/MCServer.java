@@ -228,7 +228,7 @@ public class MCServer extends ShinyBridge
                 return ChatColor.AQUA + "";
 
             case VIP:
-                return ChatColor.YELLOW + "";
+                return ChatColor.DARK_PURPLE + "";
 
             default:
                 if (ShinyBridge.DEV_BUILD)
