@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -36,7 +37,7 @@ public class ShinyBridge extends JavaPlugin
     private static Logger log;
 
     private ServerSocket serverSocket;
-    private boolean acceptingConnections;
+    private static boolean acceptingConnections;
 
     @Override
     public void onEnable()
@@ -166,7 +167,7 @@ public class ShinyBridge extends JavaPlugin
         return versionParts;
     }
 
-    public boolean isAcceptingConnections()
+    public static boolean isAcceptingConnections()
     {
         return acceptingConnections;
     }

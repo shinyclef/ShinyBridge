@@ -12,7 +12,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
@@ -21,6 +20,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
+import ru.tehkode.permissions.PermissionUser;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -228,7 +229,7 @@ public class MCServer extends ShinyBridge
                 return ChatColor.AQUA + "";
 
             case VIP:
-                return ChatColor.DARK_PURPLE + "";
+                return ChatColor.YELLOW + "";
 
             default:
                 if (ShinyBridge.DEV_BUILD)
@@ -302,10 +303,12 @@ public class MCServer extends ShinyBridge
     public static class ClientPlayer implements Player
     {
         private Account account;
+        private PermissionUser pexUser;
 
         public ClientPlayer(Account account)
         {
             this.account = account;
+            pexUser = PermissionsEx.getUser(this);
         }
 
         @Override //IMPLEMENTED
@@ -1314,10 +1317,10 @@ public class MCServer extends ShinyBridge
             return false;
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public Server getServer()
         {
-            return null;
+            return p.getServer();
         }
 
         @Override
@@ -1493,19 +1496,20 @@ public class MCServer extends ShinyBridge
         }
 
         @Override
-        public boolean isPermissionSet(Permission permission)
+        public boolean isPermissionSet(org.bukkit.permissions.Permission permission)
         {
             return false;
         }
 
-        @Override
+        @Override //IMPLEMENTED
         public boolean hasPermission(String s)
         {
-            return false;
+            return pexUser.has(s);
+            //return account.hasPermission(MCServer.getRank(s));
         }
 
         @Override
-        public boolean hasPermission(Permission permission)
+        public boolean hasPermission(org.bukkit.permissions.Permission permission)
         {
             return false;
         }
