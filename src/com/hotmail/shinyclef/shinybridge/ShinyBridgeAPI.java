@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -33,6 +34,22 @@ public class ShinyBridgeAPI
         return server.getOfflinePlayer(playerName).isOnline() ||
                 Account.getOnlineLcUsersAccountMap().containsKey(playerName.toLowerCase());
 
+    }
+
+    public boolean isOnlineVisiblyServerPlusClients(String playerName)
+    {
+        //if they're online somewhere
+        if (server.getOfflinePlayer(playerName).isOnline() ||
+            Account.getOnlineLcUsersAccountMap().containsKey(playerName.toLowerCase()))
+        {
+            //if they are visible
+            if (!Invisible.isInvisible(playerName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public String onlineAnywherePlayerName(String playerNameLc)
