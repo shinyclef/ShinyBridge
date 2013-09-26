@@ -18,7 +18,8 @@ public class NetProtocolHelper extends NetProtocol
     private static Server s = p.getServer();
     private static Logger log = p.getLogger();
 
-    public static final String CORRECT = "Correct";
+    public static final String CORRECT = "Correct:Standard";
+    public static final String CORRECT_MOD = "Correct:Mod";
     public static final String NO_USER = "Incorrect:NoUser";
     public static final String BAD_PASSWORD = "Incorrect:UserPass";
     public static final String OUT_OF_DATE = "Incorrect:OutOfDate";

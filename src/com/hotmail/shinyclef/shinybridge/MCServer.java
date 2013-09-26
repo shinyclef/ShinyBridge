@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import me.mahoutsukaii.plugins.banreport.BanReport;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -262,25 +263,39 @@ public class MCServer extends ShinyBridge
         return bannedPlayers.contains(playerName.toLowerCase());
     }
 
-    /* First character: 'B' logged in both, 'C' client only, 'S' server only.
-    *  Second character: 'V' visible on client, 'I' invisible on client */
+    /* 'I' invisible, 'B' logged in both, 'C' client only, ':' to separate special chars with name
+     * eg. IB:johnny, sammy, C:shiny, I:david */
     public static Set<String> getAllOnlinePlayerFormattedNamesSet()
     {
         //get server players set and logged in clients set
         Set<String> masterSet = getServerOnlinePlayerNamesSet();
         Set<String> clientSet = Account.getLoggedInClientUsernamesSet();
 
-        //add clients to master. Prefix '+' for logged in both, '-' for client only, and no prefix for server only.
+        //adding invisible tag to invisible players 'not' on r+
+        for (String serverPlayer : new HashSet<>(masterSet))
+        {
+            if (!clientSet.contains(serverPlayer))
+            {
+                if (Invisible.isInvisible(serverPlayer))
+                {
+                    masterSet.remove(serverPlayer) ;
+                    masterSet.add("I:" + serverPlayer);
+                }
+            }
+        }
+
+        //add clients to master with appropriate leading characters
         for (String clientUser : clientSet)
         {
+            String visibility = (Invisible.isInvisible(clientUser) ? "I" : "");
             if (masterSet.contains(clientUser))
             {
                 masterSet.remove(clientUser);
-                masterSet.add("+" + clientUser);
+                masterSet.add(visibility + "B:" + clientUser);
             }
             else
             {
-                masterSet.add("-" + clientUser);
+                masterSet.add(visibility + "C:" + clientUser);
             }
         }
 

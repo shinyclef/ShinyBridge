@@ -1,5 +1,6 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -27,7 +28,6 @@ public class Account
     private MCServer.ClientPlayer clientPlayer;
 
     private boolean isOnline;
-    private boolean isInvisible;
     private Date lastLogin;
     private Integer assignedClientID;
 
@@ -38,7 +38,6 @@ public class Account
         this.passwordHash = passwordHash;
         this.rank = rank;
         isOnline = false;
-        isInvisible = true;
         lastLogin = null;
         assignedClientID = null;
         accountListLCase.add(userName.toLowerCase());
@@ -82,12 +81,9 @@ public class Account
 
         if (isValidLogin)
         {
-            boolean isAlreadyLoggedIn = false;
-
             //check for any current connections
             if (onlineLcUsersAccountMap.containsKey(usernameLc))
             {
-                isAlreadyLoggedIn = true;
                 int oldClientID = onlineLcUsersClientMap.get(usernameLc);
 
                 //informs previous connection that it is being force closed
@@ -102,9 +98,15 @@ public class Account
             }
 
             //set account to the connection and confirm successful login
-            //login(clientID, usernameLc, !isAlreadyLoggedIn);
             login(clientID, usernameLc, true);
-            return NetProtocolHelper.CORRECT;
+            if (accountMap.get(usernameLc).clientPlayer.hasPermission("rolyd.mod"))
+            {
+                return NetProtocolHelper.CORRECT_MOD;
+            }
+            else
+            {
+                return NetProtocolHelper.CORRECT;
+            }
         }
         else
         {
@@ -127,13 +129,13 @@ public class Account
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
 
         //broadcast login on server
-        if (announce && !account.isInvisible)
+        if (announce && !Invisible.isInvisible(lcUsername))
         {
             announceLogin(username);
         }
 
         //add to scoreboard
-        if (!account.isInvisible)
+        if (!Invisible.isInvisible(lcUsername))
         {
             ScoreboardManager.addToScoreboard(username);
         }
@@ -241,11 +243,6 @@ public class Account
 
 
     /* Setters */
-
-    public void setInvisible(boolean invisible)
-    {
-        isInvisible = invisible;
-    }
 
     public void setPasswordHash(String newPasswordHash)
     {
