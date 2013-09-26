@@ -22,10 +22,12 @@ public class Account
     private final String userNameLC;
     private String passwordHash;
     private Rank rank;
+
     private String chatTag;
     private MCServer.ClientPlayer clientPlayer;
 
     private boolean isOnline;
+    private boolean isInvisible;
     private Date lastLogin;
     private Integer assignedClientID;
 
@@ -36,6 +38,7 @@ public class Account
         this.passwordHash = passwordHash;
         this.rank = rank;
         isOnline = false;
+        isInvisible = true;
         lastLogin = null;
         assignedClientID = null;
         accountListLCase.add(userName.toLowerCase());
@@ -124,13 +127,16 @@ public class Account
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
 
         //broadcast login on server
-        if (announce)
+        if (announce && !account.isInvisible)
         {
             announceLogin(username);
         }
 
         //add to scoreboard
-        ScoreboardManager.addToScoreboard(username);
+        if (!account.isInvisible)
+        {
+            ScoreboardManager.addToScoreboard(username);
+        }
 
         //set logged in values
         account.assignedClientID = clientID;
@@ -235,6 +241,11 @@ public class Account
 
 
     /* Setters */
+
+    public void setInvisible(boolean invisible)
+    {
+        isInvisible = invisible;
+    }
 
     public void setPasswordHash(String newPasswordHash)
     {

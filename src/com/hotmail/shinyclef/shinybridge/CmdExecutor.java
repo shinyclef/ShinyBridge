@@ -1,9 +1,11 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.logging.Level;
@@ -16,6 +18,7 @@ import java.util.logging.Level;
 
 public class CmdExecutor implements CommandExecutor
 {
+    public static final String MOD_PERM = "rolyd.mod";
     public static final String NO_PERM = ChatColor.RED + "You do not have permission to do that.";
     private static ShinyBridge plugin;
 
@@ -63,8 +66,11 @@ public class CmdExecutor implements CommandExecutor
                 case "reloadcommandwhitelist":
                     return reloadCommandWhiteList(sender);
 
+                case "version":
+                    return version(sender);
+
                 case "test":
-                    //ScoreboardManager.addToScoreboard(args[1]);
+                    sender.sendMessage("Inv: " + Invisible.isInvisible(args[1]));
                     return true;
             }
 
@@ -248,7 +254,7 @@ public class CmdExecutor implements CommandExecutor
         sender.sendMessage(ChatColor.AQUA + "changepassword [password]" + ChatColor.YELLOW +
                 " - Changes your RolyDPlus password to the given password.");
 
-        if (sender.hasPermission("rolyd.mod"))
+        if (sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(ChatColor.DARK_RED + "Staff Commands:");
             sender.sendMessage(ChatColor.AQUA + "debug" + ChatColor.YELLOW +
@@ -263,12 +269,13 @@ public class CmdExecutor implements CommandExecutor
     private boolean invisible(CommandSender sender, String[] args)
     {
 
+
         return true;
     }
 
     private boolean scoreboard(CommandSender sender, String[] args)
     {
-        if (!sender.hasPermission("rolyd.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(NO_PERM);
         }
@@ -316,7 +323,7 @@ public class CmdExecutor implements CommandExecutor
 
     private boolean stop(CommandSender sender, String[] args)
     {
-        if (!sender.hasPermission("rolyd.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(NO_PERM);
             return true;
@@ -357,7 +364,7 @@ public class CmdExecutor implements CommandExecutor
 
     private boolean start(CommandSender sender, String[] args)
     {
-        if (!sender.hasPermission("rolyd.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(NO_PERM);
             return true;
@@ -400,9 +407,22 @@ public class CmdExecutor implements CommandExecutor
         return true;
     }
 
+    private boolean version(CommandSender sender)
+    {
+        if (!sender.hasPermission(MOD_PERM))
+        {
+            sender.sendMessage(NO_PERM);
+        }
+
+        sender.sendMessage(ChatColor.YELLOW + "RolyDPlus Server Version: " +
+                ChatColor.GOLD + ShinyBridge.SERVER_VERSION);
+
+        return true;
+    }
+
     private boolean debug(CommandSender sender)
     {
-        if (!sender.hasPermission("rolyd.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(NO_PERM);
             return true;

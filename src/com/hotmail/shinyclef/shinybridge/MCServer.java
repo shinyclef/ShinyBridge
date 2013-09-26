@@ -262,7 +262,8 @@ public class MCServer extends ShinyBridge
         return bannedPlayers.contains(playerName.toLowerCase());
     }
 
-    //Prefix '+' for logged in both, '-' for client only, and no prefix for server only.
+    /* First character: 'B' logged in both, 'C' client only, 'S' server only.
+    *  Second character: 'V' visible on client, 'I' invisible on client */
     public static Set<String> getAllOnlinePlayerFormattedNamesSet()
     {
         //get server players set and logged in clients set

@@ -18,10 +18,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PreProcessParser
 {
+    private static ShinyBridge p;
     private static ShinyBaseAPI base;
+    private static final String MOD_PERM = "rolyd.mod";
 
-    public static void initialize(ShinyBaseAPI base)
+    public static void initialize(ShinyBridge plugin, ShinyBaseAPI base)
     {
+        p = plugin;
         PreProcessParser.base = base;
     }
 
@@ -30,22 +33,26 @@ public class PreProcessParser
     public static void parser(PlayerCommandPreprocessEvent e, final CommandSender sender,
                                         final String command, final String[] args)
     {
-        switch (command.substring(1))
+        switch (command.substring(1).toLowerCase())
         {
             case "r+": case "rolydplus": case "rplus":
                 CmdExecutor.rPlusParser(e, sender, args);
                 break;
 
             case "ban": case "tempban":
-            Bukkit.getScheduler().runTaskLater(ShinyBridge.getPlugin(), new BukkitRunnable()
-            {
-                @Override
-                public void run()
+                Bukkit.getScheduler().runTaskLater(p, new BukkitRunnable()
                 {
-                    banPostProcess(command, sender, args);
-                }
-            }, 0);
-            break;
+                    @Override
+                    public void run()
+                    {
+                        banPostProcess(command, sender, args);
+                    }
+                }, 0);
+                break;
+
+            case "inv": case "invisible": case "fq": case "fakequit":
+                Invisible.invOrFakeQuitPostProcess(command, sender, args);
+                break;
         }
     }
 
@@ -53,9 +60,9 @@ public class PreProcessParser
     public static void banPostProcess(String command, CommandSender sender, String[] args)
     {
         //do nothing if user doesn't have perm
-        if (!sender.hasPermission("rolyd.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
-            sender.sendMessage(CmdExecutor.NO_PERM);
+            //no perms message handled by ban plugin
             return;
         }
 

@@ -44,6 +44,10 @@ public class EventListener implements Listener
         commandList.add("/ban");
         commandList.add("/tempban");
         commandList.add("/kick");
+        commandList.add("/invisible");
+        commandList.add("/inv");
+        commandList.add("/fakequit");
+        commandList.add("/fq");
     }
 
     @EventHandler
