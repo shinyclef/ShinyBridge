@@ -3,9 +3,11 @@ package com.hotmail.shinyclef.shinybridge;
 import com.comphenix.protocol.Packets;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
@@ -55,8 +57,11 @@ public class ScoreboardManager
 
     public static void processServerPlayerJoin(Player player)
     {
-        //ensure any potential scoreboard presence is removed
-        removeFromScoreboard(player.getName());
+        //remove r+ name if on list
+        if (onlineTeamAndPacketMap.containsKey(player.getName()))
+        {
+            removeFromScoreboard(player.getName(), true);
+        }
 
         //send r+ scoreboard online packets to player, delay to make sure they are added to end of list
         sendScoreboardListToNewPlayer(player);
@@ -64,14 +69,65 @@ public class ScoreboardManager
 
     public static void processServerPlayerQuit(Player player)
     {
-        //check if play is logged into r+. If so, add to scoreboard.
+        //check if player is logged into r+. If so, add to scoreboard.
         if (Account.getLoggedInClientUsernamesSet().contains(player.getName()))
         {
-            addToScoreboard(player.getName());
+            addToScoreboard(player.getName(), false);
         }
     }
 
-    public static void addToScoreboard(String playerName)
+    public static void processServerPlayerInvisible(String playerName)
+    {
+        //we are ADDING r+ to scoreboard if that user is online
+        if (MCServer.isClientOnline(playerName))
+        {
+            addToScoreboard(playerName, true);
+        }
+    }
+
+    public static void processServerPlayerVisible(String playerName)
+    {
+        //ensure any potential scoreboard presence is removed
+        removeFromScoreboard(playerName, true);
+    }
+
+    public static void processClientPlayerJoin(String playerName)
+    {
+        //add the player to scoreboard
+        addToScoreboard(playerName, false);
+    }
+
+    public static void processClientPlayerQuit(String playerName)
+    {
+        //remove the player from scoreboard
+        removeFromScoreboard(playerName, false);
+    }
+
+    public static void processClientPlayerInvisible(String playerName)
+    {
+        //if player is on server and visible, no change needed
+        if (MCServer.isServerOnline(playerName) && !Invisible.isInvisibleServer(playerName))
+        {
+            return;
+        }
+
+        //we are REMOVING r+ from scoreboard if that user is online
+        removeFromScoreboard(playerName, true);
+    }
+
+    public static void processClientPlayerVisible(String playerName)
+    {
+        //if player is on server and visible, no change needed
+        if (MCServer.isServerOnline(playerName) && !Invisible.isInvisibleServer(playerName))
+        {
+            return;
+        }
+
+        //add to scoreboard as invisible toggle
+        addToScoreboard(playerName, true);
+    }
+
+    public static void addToScoreboard(String playerName, boolean invisibilityToggle)
     {
         if (!scoreboardFunctional || !scoreboardEnabled)
         {
@@ -82,55 +138,38 @@ public class ScoreboardManager
             return;
         }
 
-        //make sure player is not online on server to prevent duplicate names
-        if (s.getOfflinePlayer(playerName).isOnline())
-        {
-            if (ShinyBridge.DEV_BUILD)
-            {
-                MCServer.pluginLog("Add to scoreboard triggered while player is online.");
-            }
-            return;
-        }
-
         if (ShinyBridge.DEV_BUILD)
         {
             MCServer.pluginLog("Add to scoreboard running with name: " + playerName);
         }
 
-        //split first character off the name for prefix
-        String firstLetter = playerName.substring(0, 1);
+        //get name remainder
         String nameRemainder = playerName.substring(1);
-        String rankColour = MCServer.getRankColour(Account.getAccountMap().get(playerName).getRank());
 
-        //create prefix consisting of rankColour and firstLetter, and r+ suffix
-        String prefix = rankColour + ChatColor.ITALIC + firstLetter;
-        String suffix = (ChatColor.GRAY + "" + ChatColor.ITALIC + "(r+)");
-
-        //prepare the packet and the team
         PacketContainer packet = createScoreboardAddPacket(nameRemainder);
-        Team team = scoreboard.getTeam(nameRemainder);
-        if (team == null)
+        if (!invisibilityToggle) //legit login, so setup the team
         {
-            team = scoreboard.registerNewTeam(nameRemainder);
-        }
-        team.setPrefix(prefix);
-        team.setSuffix(suffix);
-
-        //add player to the team, then send the packet to each online player
-        team.addPlayer(s.getOfflinePlayer(nameRemainder));
-        for (Player player : s.getOnlinePlayers())
-        {
-            sendPacketToPlayer(player.getName(), packet);
+            createScoreboardTeam(playerName);
         }
 
         //add the fake player to the onlineTeamAndPacketMap
         onlineTeamAndPacketMap.put(playerName, packet);
 
-        //update teams.txt
-        updateTeamsListFile();
+        //add player to team
+        Team team = scoreboard.getTeam(nameRemainder);
+        team.addPlayer(s.getOfflinePlayer(nameRemainder));
+
+        //send the packet to each online player who should get it
+        for (Player player : s.getOnlinePlayers())
+        {
+            if (playerCanSeeRPlusPresence(player, playerName))
+            {
+                sendPacketToPlayer(player.getName(), packet);
+            }
+        }
     }
 
-    public static void removeFromScoreboard(String playerName)
+    public static void removeFromScoreboard(String playerName, boolean invisibilityToggle)
     {
         if (!scoreboardFunctional || !scoreboardEnabled)
         {
@@ -159,20 +198,102 @@ public class ScoreboardManager
         //get the packet
         PacketContainer packet = createScoreboardRemovePacket(nameRemainder);
 
-        //send the packet to all online users
+        //send the packet to all online users who should get it
         for (Player player : s.getOnlinePlayers())
         {
-            sendPacketToPlayer(player.getName(), packet);
+            if (!playerCanSeeRPlusPresence(player, playerName))
+            {
+                sendPacketToPlayer(player.getName(), packet);
+            }
         }
 
-        //remove this player from the onlineTeamAndPacketMap
-        onlineTeamAndPacketMap.remove(foundPlayer);
+        if (!invisibilityToggle) //legit logout, clear the team
+        {
+            //remove this player from the onlineTeamAndPacketMap, and scoreboard
+            onlineTeamAndPacketMap.remove(foundPlayer);
+            removeScoreboardTeam(foundPlayer);
+        }
+    }
 
-        //remove the team from scoreboard
-        scoreboard.getTeam(nameRemainder).unregister();
+    private static void createScoreboardTeam(String playerName)
+    {
+        //split first character off the name for prefix
+        String firstLetter = playerName.substring(0, 1);
+        String nameRemainder = playerName.substring(1);
+
+        //colour of the scoreboard team/name
+        String rankColour = MCServer.getRankColour(Account.getAccountMap().get(playerName.toLowerCase()).getRank());
+
+        //create prefix consisting of rankColour and firstLetter, and r+ suffix
+        String prefix = rankColour + ChatColor.ITALIC + firstLetter;
+        String suffix = (ChatColor.GRAY + "" + ChatColor.ITALIC + "(r+)");
+
+        //prepare the the team
+        Team team = scoreboard.getTeam(nameRemainder);
+        if (team == null)
+        {
+            team = scoreboard.registerNewTeam(nameRemainder);
+        }
+        team.setPrefix(prefix);
+        team.setSuffix(suffix);
 
         //update teams.txt
         updateTeamsListFile();
+    }
+
+    private static void removeScoreboardTeam(String playerName)
+    {
+        Team team = scoreboard.getTeam(playerName.substring(1));
+        if (team == null)
+        {
+            return;
+        }
+
+        //remove the team from scoreboard and update team.txt
+        team.unregister();
+        updateTeamsListFile();
+    }
+
+    private static boolean playerCanSeeRPlusPresence(Player viewingPlayer, String targetPlayerName)
+    {
+        boolean serverOnline = MCServer.isServerOnline(targetPlayerName);
+        boolean serverVisible = !Invisible.isInvisibleServer(targetPlayerName);
+        boolean clientOnline = MCServer.isClientOnline(targetPlayerName);
+        boolean clientVisible = !Invisible.isInvisibleClient(targetPlayerName);
+        boolean viewerIsMod = viewingPlayer.hasPermission(CmdExecutor.MOD_PERM);
+        if (ShinyBridge.DEV_BUILD)
+        {
+            MCServer.pluginLog("sOnline: " + serverOnline + "  sVis: " + serverVisible + "  cOnline: " + clientOnline + "  cVis : " + clientVisible);
+        }
+
+        if (viewerIsMod)
+        {
+            if (serverOnline)
+            {
+                return false;
+            }
+            else
+            {
+                return clientOnline;
+            }
+        }
+
+        //the viewer is not a mod
+        if (serverOnline)
+        {
+            if (serverVisible)
+            {
+                return false;
+            }
+            else
+            {
+                return (clientOnline && clientVisible);
+            }
+        }
+        else //not on server
+        {
+            return (clientOnline && clientVisible);
+        }
     }
 
     public static void removeAllFromScoreboard()
@@ -184,7 +305,7 @@ public class ScoreboardManager
 
         for (String name : onlineTeamAndPacketMap.keySet())
         {
-            removeFromScoreboard(name);
+            removeFromScoreboard(name, false);
         }
     }
 
@@ -199,7 +320,10 @@ public class ScoreboardManager
         scoreboardEnabled = true;
         for (String name : Account.getLoggedInClientUsernamesSet())
         {
-            addToScoreboard(name);
+            if (!Invisible.isInvisibleClient(name))
+            {
+                addToScoreboard(name, false);
+            }
         }
     }
 
@@ -214,15 +338,15 @@ public class ScoreboardManager
             @Override
             public void run()
             {
-                for (PacketContainer packet : onlineTeamAndPacketMap.values())
+                for (Map.Entry<String, PacketContainer> entry : onlineTeamAndPacketMap.entrySet())
                 {
-
-                    sendPacketToPlayer(player.getName(), packet);
+                    if (playerCanSeeRPlusPresence(player, entry.getKey()))
+                    {
+                        sendPacketToPlayer(player.getName(), entry.getValue());
+                    }
                 }
             }
-        }, 4);
-
-
+        }, 1);
     }
 
     private static PacketContainer createScoreboardAddPacket(String packetPlayerName)

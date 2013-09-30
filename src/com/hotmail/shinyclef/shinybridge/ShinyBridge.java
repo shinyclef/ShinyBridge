@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -27,8 +26,8 @@ import java.util.logging.Logger;
 public class ShinyBridge extends JavaPlugin
 {
     public static final boolean DEV_BUILD = false;
-    public static final String SERVER_VERSION = "1.0.1";
-    public static final String SUPPORTED_CLIENT_VERSION = "1.0.1";
+    public static final String SERVER_VERSION = "1.0.3";
+    public static final String SUPPORTED_CLIENT_VERSION = "1.0.2";
     private static int[] versionParts;
 
     private static ShinyBridge plugin;

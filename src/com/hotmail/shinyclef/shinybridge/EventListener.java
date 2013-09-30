@@ -1,6 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -58,7 +59,7 @@ public class EventListener implements Listener
 
         //reset rank if player has an account
         String playerName = e.getPlayer().getName();
-        Account account = Account.getAccountMap().get(playerName);
+        Account account = Account.getAccountMap().get(playerName.toLowerCase());
         if (account != null)
         {
             account.setRank(MCServer.getRank(e.getPlayer()));
@@ -68,7 +69,11 @@ public class EventListener implements Listener
         ScoreboardManager.processServerPlayerJoin(e.getPlayer());
 
         //inform clients
-        NetProtocolHelper.broadcastServerJoin(playerName);
+        NetProtocolHelper.informClientsOnPlayerStatusChange(playerName);
+        if (!Invisible.isInvisibleServer(playerName))
+        {
+            NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(playerName, "Server", "Join");
+        }
     }
 
     @EventHandler
@@ -79,20 +84,23 @@ public class EventListener implements Listener
         //remove player from chatTagMap
         MCServer.removeFromPlayerChatTagMap(player);
 
-        //inform ScoreBoard manager after player is fully gone
+        //inform ScoreBoard manager and clients with minimum delay to ensure quit has finalised
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
         {
             @Override
             public void run()
             {
                 ScoreboardManager.processServerPlayerQuit(player);
+
+                //inform clients
+                String playerName = player.getName();
+                NetProtocolHelper.informClientsOnPlayerStatusChange(playerName);
+                if (!Invisible.isInvisibleServer(playerName))
+                {
+                    NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(playerName, "Server", "Quit");
+                }
             }
-        }, 4);
-
-
-        //inform clients
-        String playerName = e.getPlayer().getName();
-        NetProtocolHelper.broadcastServerQuit(playerName);
+        }, 0);
     }
 
     @EventHandler

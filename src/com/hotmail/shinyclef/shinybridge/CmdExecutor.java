@@ -5,7 +5,6 @@ import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.util.logging.Level;
@@ -48,7 +47,7 @@ public class CmdExecutor implements CommandExecutor
                 case "unregister":
                     return unregister(sender, args);
 
-                case "inv":
+                case "invisible": case "inv":
                     return invisible(sender, args);
 
                 case "debug":
@@ -69,9 +68,9 @@ public class CmdExecutor implements CommandExecutor
                 case "version":
                     return version(sender);
 
-                case "test":
-                    sender.sendMessage("Inv: " + Invisible.isInvisible(args[1]));
-                    return true;
+/*                case "test":
+                    sender.sendMessage("Inv: " + Invisible.isInvisibleServer(args[1]));
+                    return true;*/
             }
 
         }
@@ -100,6 +99,13 @@ public class CmdExecutor implements CommandExecutor
     {
         //cancel original command
         e.setCancelled(true);
+
+        //only allow this from server, not client
+        if (e.getPlayer() instanceof MCServer.ClientPlayer)
+        {
+            e.getPlayer().sendMessage(NetProtocol.COMMAND_UNAVAILABLE_FROM_RPLUS);
+            return;
+        }
 
         //needs 2 args
         if (args.length != 2)
@@ -166,6 +172,13 @@ public class CmdExecutor implements CommandExecutor
             return false;
         }
 
+        //don't allow if user is logged into r+
+        if (MCServer.isClientOnline(sender.getName()))
+        {
+            sender.sendMessage(ChatColor.RED + "Sorry, you cannot be logged into RolyDPlus while using this command.");
+            return true;
+        }
+
         //check if user has an account
         if (!Account.getAccountMap().containsKey(sender.getName().toLowerCase()))
         {
@@ -197,13 +210,13 @@ public class CmdExecutor implements CommandExecutor
         String senderName = sender.getName();
 
         //check if they have an account
-        if (!Account.getAccountMap().containsKey(senderName))
+        if (!Account.getAccountMap().containsKey(senderName.toLowerCase()))
         {
             sender.sendMessage(ChatColor.RED + "You do not have an account.");
             return;
         }
 
-        Account account = Account.getAccountMap().get(senderName);
+        Account account = Account.getAccountMap().get(senderName.toLowerCase());
         String newPass = args[1];
         int lengthDifference = AccountPassword.isCorrectLength(newPass);
 
@@ -268,8 +281,18 @@ public class CmdExecutor implements CommandExecutor
 
     private boolean invisible(CommandSender sender, String[] args)
     {
+        if (args.length > 1)
+        {
+            return false;
+        }
 
+        if (!sender.hasPermission(MOD_PERM))
+        {
+            sender.sendMessage(NO_PERM);
+            return true;
+        }
 
+        Invisible.clientPlayerHasToggledInvisibility(sender);
         return true;
     }
 
@@ -307,11 +330,11 @@ public class CmdExecutor implements CommandExecutor
         switch (args[1].toLowerCase())
         {
             case "add":
-                ScoreboardManager.addToScoreboard(args[2]);
+                ScoreboardManager.addToScoreboard(args[2], false);
                 break;
 
             case "remove":
-                ScoreboardManager.removeFromScoreboard(args[2].toLowerCase());
+                ScoreboardManager.removeFromScoreboard(args[2].toLowerCase(), false);
                 break;
 
             default:
@@ -397,7 +420,7 @@ public class CmdExecutor implements CommandExecutor
 
     private boolean reloadCommandWhiteList(CommandSender sender)
     {
-        if (!sender.hasPermission("roly.mod"))
+        if (!sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(NO_PERM);
             return true;

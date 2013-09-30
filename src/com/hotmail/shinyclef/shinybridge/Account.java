@@ -2,7 +2,6 @@ package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 
 import java.util.*;
 
@@ -15,6 +14,7 @@ import java.util.*;
 public class Account
 {
     private static Map<String, Account> accountMap = new HashMap<String, Account>();
+    //accountMap<String lowerCasePlayerName, Account account>
     private static List<String> accountListLCase = new ArrayList<String>();
     private static Map<String, Integer> onlineLcUsersClientMap = new HashMap<String, Integer>();
     private static Map<String, Account> onlineLcUsersAccountMap = new HashMap<String, Account>();
@@ -65,9 +65,9 @@ public class Account
         }
     }
 
-    public static String validateLogin(int clientID, String username, String password)
+    public static String validateLogin(int clientID, String userName, String password)
     {
-        String usernameLc = username.toLowerCase();
+        String usernameLc = userName.toLowerCase();
 
         //check if user is registered
         if(!accountListLCase.contains(usernameLc))
@@ -98,7 +98,7 @@ public class Account
             }
 
             //set account to the connection and confirm successful login
-            login(clientID, usernameLc, true);
+            login(clientID, usernameLc, !Invisible.isInvisibleClient(userName));
             if (accountMap.get(usernameLc).clientPlayer.hasPermission("rolyd.mod"))
             {
                 return NetProtocolHelper.CORRECT_MOD;
@@ -129,15 +129,9 @@ public class Account
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
 
         //broadcast login on server
-        if (announce && !Invisible.isInvisible(lcUsername))
+        if (announce)
         {
-            announceLogin(username);
-        }
-
-        //add to scoreboard
-        if (!Invisible.isInvisible(lcUsername))
-        {
-            ScoreboardManager.addToScoreboard(username);
+            announceClientLoginToServer(username);
         }
 
         //set logged in values
@@ -145,6 +139,14 @@ public class Account
         account.isOnline = true;
         onlineLcUsersClientMap.put(lcUsername, clientID);
         onlineLcUsersAccountMap.put(lcUsername, account);
+
+        //inform clients
+        NetProtocolHelper.informClientsOnPlayerStatusChange(username);
+        if (!Invisible.isInvisibleClient(username))
+        {
+            NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(username, "Client", "Join");
+        }
+        ScoreboardManager.processClientPlayerJoin(username);
     }
 
     public void logout(boolean announce)
@@ -156,25 +158,26 @@ public class Account
 
         if (announce)
         {
-            announceLogout(userName);
+            announceClientLogoutToServer(userName);
         }
 
-        //remove from scoreboard
-        ScoreboardManager.removeFromScoreboard(userName);
+        //inform clients
+        NetProtocolHelper.informClientsOnPlayerStatusChange(userName);
+        if (!Invisible.isInvisibleClient(userName))
+        {
+            NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(userName, "Client", "Quit");
+        }
+        ScoreboardManager.processClientPlayerQuit(userName);
     }
 
-    public static void announceLogin(String username)
+    public static void announceClientLoginToServer(String username)
     {
         MCServer.getPlugin().getServer().broadcastMessage(ChatColor.WHITE + username +
                 ChatColor.YELLOW + " joined RolyDPlus!");
-
-        //inform clients
-        NetProtocolHelper.broadcastClientJoin(username);
     }
 
-    public static void announceLogout(String username)
+    public static void announceClientLogoutToServer(String username)
     {
-        //inform server
         MCServer.getPlugin().getServer().broadcastMessage(ChatColor.WHITE + username +
                 ChatColor.YELLOW + " left RolyDPlus!");
     }

@@ -94,10 +94,39 @@ public class MCServer extends ShinyBridge
         pluginLog.info("R+: " + msg);
     }
 
+    public static String getCurrentPresence(String playerName)
+    {
+        String currentPresence = "None";
+        if (playerName == null)
+        {
+            return null;
+        }
+
+        if (MCServer.isServerOnline(playerName))
+        {
+            if (isClientOnline(playerName))
+            {
+                currentPresence = "Both";
+            }
+            else
+            {
+                currentPresence = "Server";
+            }
+        }
+        else
+        {
+            if (isClientOnline(playerName))
+            {
+                currentPresence = "Client";
+            }
+        }
+        return currentPresence;
+    }
+
     public static void addToPlayerChatTagMap(Player player)
     {
         String playerName = player.getName();
-        Account.Rank chatRank = getChatRank(player);
+        Account.Rank chatRank = getChatRank(player.getName());
         String rankTag = getColouredRankString(chatRank);
 
         //put it all together
@@ -117,23 +146,26 @@ public class MCServer extends ShinyBridge
         playerChatTagMap.remove(player.getName());
     }
 
-    public static Account.Rank getRank(Player player)
+    public static Account.Rank getRank(Player playerName)
     {
+        //get PEX user
+        PermissionUser pexUser = PermissionsEx.getUser(playerName);
+
         //get highest rank
         Account.Rank rank;
-        if (player.hasPermission("rolyd.admin"))
+        if (pexUser.has("rolyd.admin"))
         {
             rank = Account.Rank.GM;
         }
-        else if (player.hasPermission("rolyd.mod"))
+        else if (pexUser.has("rolyd.mod"))
         {
             rank = Account.Rank.MOD;
         }
-        else if (player.hasPermission("rolyd.exp"))
+        else if (pexUser.has("rolyd.exp"))
         {
             rank = Account.Rank.EXPERT;
         }
-        else if (player.hasPermission("rolyd.vip"))
+        else if (pexUser.has("rolyd.vip"))
         {
             rank = Account.Rank.VIP;
         }
@@ -144,7 +176,7 @@ public class MCServer extends ShinyBridge
         return rank;
     }
 
-    public static Account.Rank getRank(String permission)
+    public static Account.Rank getRankFromPermission(String permission)
     {
         String perm = permission.toLowerCase();
         if (perm.equals("rolyd.admin"))
@@ -169,21 +201,22 @@ public class MCServer extends ShinyBridge
         }
     }
 
-    public static Account.Rank getChatRank(Player player)
+    public static Account.Rank getChatRank(String playerName)
     {
-        if (player.hasPermission("simpleprefix.admin"))
+        PermissionUser pexUser = PermissionsEx.getUser(playerName);
+        if (pexUser.has("simpleprefix.admin"))
         {
             return Account.Rank.GM;
         }
-        else if (player.hasPermission("simpleprefix.moderator"))
+        else if (pexUser.has("simpleprefix.moderator"))
         {
             return Account.Rank.MOD;
         }
-        else if (player.hasPermission("simpleprefix.Exp"))
+        else if (pexUser.has("simpleprefix.Exp"))
         {
             return Account.Rank.EXPERT;
         }
-        else if (player.hasPermission("simpleprefix.vip"))
+        else if (pexUser.has("simpleprefix.vip"))
         {
             return Account.Rank.VIP;
         }
@@ -230,7 +263,7 @@ public class MCServer extends ShinyBridge
                 return ChatColor.AQUA + "";
 
             case VIP:
-                return ChatColor.YELLOW + "";
+                return ChatColor.DARK_PURPLE + "";
 
             default:
                 if (ShinyBridge.DEV_BUILD)
@@ -244,6 +277,11 @@ public class MCServer extends ShinyBridge
     public static boolean isServerOnline(String playerName)
     {
         return (s.getOfflinePlayer(playerName).isOnline());
+    }
+
+    public static boolean isClientOnline(String playerName)
+    {
+        return Account.getOnlineLcUsersClientMap().keySet().contains(playerName.toLowerCase());
     }
 
     public static Set<String> getServerOnlinePlayerNamesSet()
@@ -263,40 +301,32 @@ public class MCServer extends ShinyBridge
         return bannedPlayers.contains(playerName.toLowerCase());
     }
 
-    /* 'I' invisible, 'B' logged in both, 'C' client only, ':' to separate special chars with name
-     * eg. IB:johnny, sammy, C:shiny, I:david */
+    /* 'B' logged in both, 'S' server only, 'C' client only, 'N' none, '.' to separate special chars with name
+     * eg. First char upper case shows online locations, second char lower case show invisible locations */
     public static Set<String> getAllOnlinePlayerFormattedNamesSet()
     {
         //get server players set and logged in clients set
         Set<String> masterSet = getServerOnlinePlayerNamesSet();
         Set<String> clientSet = Account.getLoggedInClientUsernamesSet();
 
-        //adding invisible tag to invisible players 'not' on r+
-        for (String serverPlayer : new HashSet<>(masterSet))
+        //add all clients to masterSet
+        for (String clientUser : clientSet)
         {
-            if (!clientSet.contains(serverPlayer))
+            if (!masterSet.contains(clientUser))
             {
-                if (Invisible.isInvisible(serverPlayer))
-                {
-                    masterSet.remove(serverPlayer) ;
-                    masterSet.add("I:" + serverPlayer);
-                }
+                masterSet.add(clientUser);
             }
         }
 
-        //add clients to master with appropriate leading characters
-        for (String clientUser : clientSet)
+        //for each person on masterSet, add online location and invis location leading chars
+        for (String playerName : new HashSet<>(masterSet))
         {
-            String visibility = (Invisible.isInvisible(clientUser) ? "I" : "");
-            if (masterSet.contains(clientUser))
-            {
-                masterSet.remove(clientUser);
-                masterSet.add(visibility + "B:" + clientUser);
-            }
-            else
-            {
-                masterSet.add(visibility + "C:" + clientUser);
-            }
+            String onlineLocations = NetProtocolHelper.getOnlineLocationsCode(playerName);
+            String invisibleLocations = NetProtocolHelper.getInvisibleLocationsCode(playerName);
+
+            String newEntry = onlineLocations + invisibleLocations + "." + playerName;
+            masterSet.remove(playerName);
+            masterSet.add(newEntry);
         }
 
         return masterSet;
@@ -310,10 +340,54 @@ public class MCServer extends ShinyBridge
 
         for (String playerName : Account.getOnlineLcUsersClientMap().keySet())
         {
-            recipients.add(Account.getAccountMap().get(playerName).getClientPlayer());
+            recipients.add(Account.getAccountMap().get(playerName.toLowerCase()).getClientPlayer());
         }
 
         return recipients;
+    }
+
+    /* Taken directly from AdminCmd code with some adaptions. Full credit goes to Balor.
+    * https://github.com/Belphemur/AdminCmd/blob/master/src/main/java/be/Balor/Tools/Utils.java*/
+    public static String getTargetNameFromShortcut(String name)
+    {
+        final Set<Player> players = getOnlinePlayersEverywhereSet();
+        Player found = null;
+        final String lowerName = name.toLowerCase();
+        int smallestDif = Integer.MAX_VALUE;
+
+        //search through all online players
+        for (final Player player : players)
+        {
+            //if the online player starts with the search string
+            if (player.getName().toLowerCase().startsWith(lowerName))
+            {
+                //store difference in length in thisDif
+                int thisDif = player.getName().length() - lowerName.length();
+
+                //if it's the smallest difference, make this our found player
+                if (thisDif < smallestDif)
+                {
+                    found = player;
+                    smallestDif = thisDif;
+                }
+
+                //stop searching if the name is exact
+                if (thisDif == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        //return result's name if there is one
+        if (found != null)
+        {
+            return found.getName();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public static class ClientPlayer implements Player
@@ -327,10 +401,15 @@ public class MCServer extends ShinyBridge
             pexUser = PermissionsEx.getUser(this);
         }
 
+        public String getChatTag()
+        {
+            return account.getChatTag();
+        }
+
         @Override //IMPLEMENTED
         public String getDisplayName()
         {
-            return account.getChatTag();
+            return account.getUserName();
         }
 
         @Override
@@ -668,6 +747,7 @@ public class MCServer extends ShinyBridge
         @Override
         public void hidePlayer(Player player)
         {
+
         }
 
         @Override
@@ -1521,7 +1601,6 @@ public class MCServer extends ShinyBridge
         public boolean hasPermission(String s)
         {
             return pexUser.has(s);
-            //return account.hasPermission(MCServer.getRank(s));
         }
 
         @Override
@@ -1595,10 +1674,10 @@ public class MCServer extends ShinyBridge
 
     private static class AsyncChat extends BukkitRunnable
     {
-        Player player;
+        ClientPlayer player;
         String msg;
 
-        private AsyncChat(Player player, String msg)
+        private AsyncChat(ClientPlayer player, String msg)
         {
             this.player = player;
             this.msg = msg;
@@ -1615,7 +1694,7 @@ public class MCServer extends ShinyBridge
                 return;
             }
 
-            s.broadcastMessage(player.getDisplayName() + msg);
+            s.broadcastMessage(player.getChatTag() + msg);
         }
     }
 

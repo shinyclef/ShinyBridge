@@ -50,8 +50,8 @@ public class PreProcessParser
                 }, 0);
                 break;
 
-            case "inv": case "invisible": case "fq": case "fakequit":
-                Invisible.invOrFakeQuitPostProcess(command, sender, args);
+            case "inv": case "invisible":
+                Invisible.invPostProcess(sender, args);
                 break;
         }
     }

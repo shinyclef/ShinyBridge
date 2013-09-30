@@ -8,6 +8,8 @@ Database:
   Port: 9999
   Hostname: rolyd.com
 
+InvisibleClientUsers:
+
 CommandWhiteList:
 - mb
 - sb

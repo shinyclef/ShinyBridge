@@ -26,6 +26,9 @@ public class NetProtocol
     public static final String QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER = "Disconnect";
     public static final String QUIT_MESSAGE_UNEXPECTED = QUIT_MESSAGE + ":Unexpected";
     public static final String POISON_PILL_OUT = CUSTOM_COMMAND_MARKER + "PoisonPill";
+    public static final String COMMAND_UNAVAILABLE_FROM_RPLUS = ChatColor.RED +
+            "That command is not available from RolyDPlus.";
+
 
     private static ShinyBridge p = ShinyBridge.getPlugin();
     private static Server s = p.getServer();
@@ -116,8 +119,7 @@ public class NetProtocol
         //remove first character
         String message = input.substring(1);
 
-        String userName = account.getUserName();
-        String fullChatTag = account.getChatTag();
+        String fullChatTag = account.getClientPlayer().getChatTag();
         String chatLine = fullChatTag + message;
 
         //send chat to server and all clients
@@ -190,7 +192,7 @@ public class NetProtocol
         }
         else
         {
-            sendToClient(clientID, ChatColor.RED + "That command is not available from RolyDPlus.", true);
+            sendToClient(clientID, COMMAND_UNAVAILABLE_FROM_RPLUS, true);
         }
     }
 
@@ -210,7 +212,7 @@ public class NetProtocol
         String chatTag;
         if (player instanceof MCServer.ClientPlayer)
         {
-            chatTag = player.getDisplayName();
+            chatTag = ((MCServer.ClientPlayer) player).getChatTag();
         }
         else
         {

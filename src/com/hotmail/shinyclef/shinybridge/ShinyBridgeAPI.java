@@ -23,7 +23,7 @@ public class ShinyBridgeAPI
 
     public void sendToClient(String playerName, String message)
     {
-        if (Account.getOnlineLcUsersClientMap().containsKey(playerName.toLowerCase()))
+        if (MCServer.isClientOnline(playerName))
         {
             NetProtocol.sendToClient(Account.getOnlineLcUsersClientMap().get(playerName.toLowerCase()), message, true);
         }
@@ -36,20 +36,11 @@ public class ShinyBridgeAPI
 
     }
 
-    public boolean isOnlineVisiblyServerPlusClients(String playerName)
+    public boolean isVisiblyOnlineServerPlusClients(String playerName)
     {
-        //if they're online somewhere
-        if (server.getOfflinePlayer(playerName).isOnline() ||
-            Account.getOnlineLcUsersAccountMap().containsKey(playerName.toLowerCase()))
-        {
-            //if they are visible
-            if (!Invisible.isInvisible(playerName))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        //true if they are online and not invisible on server, or, online and not invisible on client
+        return (MCServer.isServerOnline(playerName) && !Invisible.isInvisibleServer(playerName)) ||
+                (MCServer.isClientOnline(playerName) && !Invisible.isInvisibleClient(playerName));
     }
 
     public String onlineAnywherePlayerName(String playerNameLc)

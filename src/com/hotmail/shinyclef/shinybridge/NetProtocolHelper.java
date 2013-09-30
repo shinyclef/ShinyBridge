@@ -1,5 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 
 import java.util.Set;
@@ -24,8 +26,6 @@ public class NetProtocolHelper extends NetProtocol
     public static final String BAD_PASSWORD = "Incorrect:UserPass";
     public static final String OUT_OF_DATE = "Incorrect:OutOfDate";
     public static final String DUPLICATE = "Duplicate";
-
-
 
     public static void broadcastRawToClients(String message, boolean isChat)
     {
@@ -75,7 +75,7 @@ public class NetProtocolHelper extends NetProtocol
     public static void broadcastChat(String chatLine, String permission, boolean serverBroadcast)
     {
         //convert permission to a rank and required level
-        Account.Rank requiredRank = MCServer.getRank(permission);
+        Account.Rank requiredRank = MCServer.getRankFromPermission(permission);
 
         //for each client...
         String clientChat = "*" + chatLine;
@@ -88,7 +88,7 @@ public class NetProtocolHelper extends NetProtocol
             }
 
             //only send if they have the required rank
-            if (client.getAccount().hasPermission(requiredRank))
+            if (client.getAccount().getClientPlayer().hasPermission(permission))
             {
                 try
                 {
@@ -177,7 +177,7 @@ public class NetProtocolHelper extends NetProtocol
         if (account != null)
         {
             wasLoggedIn = true;
-            account.logout(true);
+            account.logout(!Invisible.isInvisibleClient(account.getUserName()));
         }
 
         //broadcast to console if it's a client that wasn't logged in
@@ -218,49 +218,85 @@ public class NetProtocolHelper extends NetProtocol
         sendToClient(clientID, QUIT_MESSAGE + ":" + typeInfo + ":" + reason, false);
     }
 
-    public static void broadcastServerJoin(String playerName)
+    /* @location: Server/Client
+    *  @type:     Join/Quit/Invisible/Visible */
+    public static void informClientsOnPlayerStatusChange(String playerName)
     {
-        //check if they're logged in client
-        String currentPresence = "Server";
-        if (Account.getOnlineLcUsersClientMap().keySet().contains(playerName.toLowerCase()))
-        {
-            currentPresence = "Both";
-        }
-
-        broadcastRawToClients("@" + "ServerJoin:" + playerName + ":" + currentPresence, false);
-
+        broadcastRawToClients("@StatusChange:" + playerName + ":" +
+                NetProtocolHelper.getOnlineLocationsCode(playerName) +
+                NetProtocolHelper.getInvisibleLocationsCode(playerName), false);
     }
 
-    public static void broadcastServerQuit(String playerName)
+    public static void broadcastOnlineChangeMessageToClientsIfVisible(String playerName,
+                                                                      String serverOrClient, String joinOrQuit)
     {
-        //check if they're logged in client
-        String currentPresence = "None";
-        if (Account.getOnlineLcUsersClientMap().keySet().contains(playerName.toLowerCase()))
+        String location = "";
+        if (serverOrClient.equalsIgnoreCase("server"))
         {
-            currentPresence = "Client";
+            location = "the game";
         }
-        broadcastRawToClients("@" + "ServerQuit:" + playerName + ":" + currentPresence, false);
+        else if (serverOrClient.equalsIgnoreCase("client"))
+        {
+            location = "RolyDPlus";
+        }
+
+        String direction = "";
+        if (joinOrQuit.equalsIgnoreCase("join"))
+        {
+            direction = "joined";
+        }
+        else if (joinOrQuit.equalsIgnoreCase("quit"))
+        {
+            direction = "left";
+        }
+
+
+        broadcastChat(ChatColor.WHITE + playerName + ChatColor.YELLOW + " " + direction + " " + location + "!", false);
     }
 
-    public static void broadcastClientJoin(String playerName)
+    public static String getOnlineLocationsCode(String playerName)
     {
-        //check if they are logged in server
-        String currentPresence = "Client";
-        if (MCServer.isServerOnline(playerName))
+        String currentPresence = MCServer.getCurrentPresence(playerName);
+        switch (currentPresence)
         {
-            currentPresence = "Both";
+            case "Server":
+                return "S";
+
+            case "Client":
+                return "C";
+
+            case "Both":
+                return "B";
+
+            case "None":
+                return "N";
+
+            default:
+                MCServer.pluginLog("Warning! Default case triggered in NetProtocolHelper.getOnlineLocationsCode.");
+                return "N";
         }
-        broadcastRawToClients("@" + "ClientJoin:" + playerName + ":" + currentPresence, false);
     }
 
-    public static void broadcastClientQuit(String playerName)
+    public static String getInvisibleLocationsCode(String playerName)
     {
-        //check if they are logged in server
-        String currentPresence = "None";
-        if (MCServer.isServerOnline(playerName))
+        boolean serverInvisible = Invisible.isInvisibleServer(playerName);
+        boolean clientInvisible = Invisible.isInvisibleClient(playerName);
+
+        if (serverInvisible && clientInvisible)
         {
-            currentPresence = "Server";
+            return "b";
         }
-        broadcastRawToClients("@" + "ClientQuit:" + playerName + ":" + currentPresence, false);
+        else if (serverInvisible)
+        {
+            return "s";
+        }
+        else if (clientInvisible)
+        {
+            return "c";
+        }
+        else
+        {
+            return "n";
+        }
     }
 }
