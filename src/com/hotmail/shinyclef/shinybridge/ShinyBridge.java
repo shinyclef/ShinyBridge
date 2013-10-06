@@ -5,7 +5,9 @@ import com.comphenix.protocol.ProtocolManager;
 import com.hotmail.shinyclef.shinybase.ShinyBase;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Money;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.Say;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -25,9 +27,9 @@ import java.util.logging.Logger;
 
 public class ShinyBridge extends JavaPlugin
 {
-    public static final boolean DEV_BUILD = false;
+    public static final boolean DEV_BUILD = true;
     public static final String SERVER_VERSION = "1.0.3";
-    public static final String SUPPORTED_CLIENT_VERSION = "1.0.2";
+    public static final String SUPPORTED_CLIENT_VERSION = "1.0.3";
     private static int[] versionParts;
 
     private static ShinyBridge plugin;
@@ -94,8 +96,14 @@ public class ShinyBridge extends JavaPlugin
         Database.prepareConnection(this);
         new Database.onPluginLoad().runTaskAsynchronously(plugin);
         ScoreboardManager.initialise(this, protocolManager, teamsFile, scoreboardEnabled);
+
+        //command components
         PreProcessParser.initialize(this, shinyBaseAPI);
         Invisible.initialise(plugin);
+        Say.initialize();
+        Money.initialize();
+
+        //start the services
         startAcceptingClients();
         shinyBridgeAPI = new ShinyBridgeAPI();
 

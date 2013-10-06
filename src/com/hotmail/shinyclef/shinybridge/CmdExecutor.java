@@ -7,6 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -259,7 +261,7 @@ public class CmdExecutor implements CommandExecutor
 
     private boolean showHelp(CommandSender sender, String[] args)
     {
-        sender.sendMessage(ChatColor.AQUA + "Commands are accessible with /RolyDPlus, /rplus, or /r+. Eg. '/r+ help'.");
+        sender.sendMessage(ChatColor.BLUE + "Commands are accessible with /RolyDPlus, /rplus, or /r+. Eg. '/r+ help'.");
         sender.sendMessage(ChatColor.AQUA + "register [password]" + ChatColor.YELLOW +
                 " - Registers your username for use with RolyDPlus with the given password.");
         sender.sendMessage(ChatColor.AQUA + "unregister" + ChatColor.YELLOW +
@@ -368,9 +370,9 @@ public class CmdExecutor implements CommandExecutor
         plugin.stopAcceptingClients();
 
         //go through each client and disconnect
-        for (NetClientConnection client : NetClientConnection.getClientMap().values())
+        for (Integer clientID : new HashSet<>(NetClientConnection.getClientMap().keySet()))
         {
-            client.disconnectClient("lockdown");
+            NetClientConnection.getClientMap().get(clientID).disconnectClient("lockdown");
         }
 
         //user feedback

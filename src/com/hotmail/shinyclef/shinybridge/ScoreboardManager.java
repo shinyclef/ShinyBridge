@@ -225,8 +225,8 @@ public class ScoreboardManager
         String rankColour = MCServer.getRankColour(Account.getAccountMap().get(playerName.toLowerCase()).getRank());
 
         //create prefix consisting of rankColour and firstLetter, and r+ suffix
-        String prefix = rankColour + ChatColor.ITALIC + firstLetter;
-        String suffix = (ChatColor.GRAY + "" + ChatColor.ITALIC + "(r+)");
+        String prefix = rankColour + firstLetter;
+        String suffix = (ChatColor.GRAY + "" + "(r+)");
 
         //prepare the the team
         Team team = scoreboard.getTeam(nameRemainder);

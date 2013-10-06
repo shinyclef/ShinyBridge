@@ -1,10 +1,7 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
-import com.hotmail.shinyclef.shinybridge.Account;
-import com.hotmail.shinyclef.shinybridge.CmdExecutor;
-import com.hotmail.shinyclef.shinybridge.MCServer;
-import com.hotmail.shinyclef.shinybridge.ShinyBridge;
+import com.hotmail.shinyclef.shinybridge.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -33,6 +30,8 @@ public class PreProcessParser
     public static void parser(PlayerCommandPreprocessEvent e, final CommandSender sender,
                                         final String command, final String[] args)
     {
+        /* ATTENTION! Commands must be in EventListener.commandList in order to not be ignored. */
+
         switch (command.substring(1).toLowerCase())
         {
             case "r+": case "rolydplus": case "rplus":
@@ -52,6 +51,10 @@ public class PreProcessParser
 
             case "inv": case "invisible":
                 Invisible.invPostProcess(sender, args);
+                break;
+
+            case "say":
+                Say.processSay(sender, args);
                 break;
         }
     }
@@ -131,5 +134,16 @@ public class PreProcessParser
 
         //unregister their account, they can only re-register from server after their ban
         Account.unregister(userNameLc);
+    }
+
+    /* Handles refreshing of all permissions when an authorised player uses a /pex command. */
+    private static void pexPostProcess(CommandSender sender)
+    {
+        if (!sender.hasPermission(CmdExecutor.MOD_PERM))
+        {
+            return;
+        }
+
+        MCServer.refreshAllPermissions();
     }
 }

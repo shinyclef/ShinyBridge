@@ -1,5 +1,7 @@
 package com.hotmail.shinyclef.shinybridge;
 
+import com.hotmail.shinyclef.shinybase.PermissionListener;
+import com.hotmail.shinyclef.shinybase.PermissionsChangeManager;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
@@ -10,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
@@ -21,8 +24,9 @@ import java.util.Set;
  * Time: 11:23 PM
  */
 
-public class EventListener implements Listener
+public class EventListener implements Listener, PermissionListener
 {
+    private static EventListener instance;
     private ShinyBridge plugin;
     private ShinyBaseAPI base;
     private Set<String> commandList;
@@ -32,7 +36,11 @@ public class EventListener implements Listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
         this.base = shinyBaseAPI;
+        instance = this;
         populateCommandList();
+
+        //register for permission change events
+        PermissionsChangeManager.registerListener(this);
     }
 
     /* The list of commands the commandPreProcess listener should not ignore. */
@@ -45,10 +53,16 @@ public class EventListener implements Listener
         commandList.add("/ban");
         commandList.add("/tempban");
         commandList.add("/kick");
-        commandList.add("/invisible");
-        commandList.add("/inv");
-        commandList.add("/fakequit");
-        commandList.add("/fq");
+    }
+
+    public static void registerCommand(String command)
+    {
+
+        if (instance.commandList == null)
+        {
+            instance.commandList = new HashSet<>();
+        }
+        instance.commandList.add(command);
     }
 
     @EventHandler
@@ -62,7 +76,7 @@ public class EventListener implements Listener
         Account account = Account.getAccountMap().get(playerName.toLowerCase());
         if (account != null)
         {
-            account.setRank(MCServer.getRank(e.getPlayer()));
+            account.refreshPermissionSettings();
         }
 
         //inform ScoreBoard manager
@@ -104,7 +118,7 @@ public class EventListener implements Listener
     }
 
     @EventHandler
-    public void eventCommandPreprocess(PlayerCommandPreprocessEvent e)
+    public void eventPlayerCommandPreprocess(PlayerCommandPreprocessEvent e)
     {
         final String message = e.getMessage().trim();
         String lcMessage = message.toLowerCase();
@@ -183,5 +197,11 @@ public class EventListener implements Listener
         {
             NetProtocol.processServerChat(message, player);
         }
+    }
+
+    @Override
+    public void permissionChangeEvent()
+    {
+        MCServer.refreshAllPermissions();
     }
 }

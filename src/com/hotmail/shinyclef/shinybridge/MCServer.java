@@ -146,7 +146,33 @@ public class MCServer extends ShinyBridge
         playerChatTagMap.remove(player.getName());
     }
 
-    public static Account.Rank getRank(Player playerName)
+    public static void refreshPlayerChatTagMap()
+    {
+        playerChatTagMap.clear();
+        for (Player player : s.getOnlinePlayers())
+        {
+            addToPlayerChatTagMap(player);
+        }
+    }
+
+    public static void refreshAllPermissions()
+    {
+        //refresh server player chat tags
+        MCServer.refreshPlayerChatTagMap();
+
+        //refresh online client chat tags
+        for (Account account : Account.getOnlineLcUsersAccountMap().values())
+        {
+            account.refreshPermissionSettings();
+        }
+    }
+
+    public static Account.Rank getRank(Player player)
+    {
+        return getRank(player.getName());
+    }
+
+    public static Account.Rank getRank(String playerName)
     {
         //get PEX user
         PermissionUser pexUser = PermissionsEx.getUser(playerName);
@@ -260,17 +286,20 @@ public class MCServer extends ShinyBridge
                 return ChatColor.GREEN + "";
 
             case EXPERT:
-                return ChatColor.AQUA + "";
+                return ChatColor.DARK_AQUA + "";
 
             case VIP:
                 return ChatColor.DARK_PURPLE + "";
+
+            case STANDARD:
+                return "";
 
             default:
                 if (ShinyBridge.DEV_BUILD)
                 {
                     pluginLog("WARNING! Default case triggered in MCServer.getRankColour.");
                 }
-            return "";
+                return "";
         }
     }
 

@@ -19,21 +19,18 @@ import java.util.List;
  * Time: 6:02 AM
  */
 
-public class Invisible
+public class Invisible extends AdaptedCommand
 {
-    private static ShinyBridge p;
-    private static Server s;
-    private static Configuration config;
+
     private static final String MOD_PERM = "rolyd.mod";
     private static List<String> invisibleClientUsersLc;
 
     public static void initialise(ShinyBridge plugin)
     {
-        p = plugin;
-        s = p.getServer();
-        config = MCServer.getPlugin().getConfig();
         invisibleClientUsersLc = new ArrayList<>();
         invisibleClientUsersLc = config.getStringList("InvisibleClientUsers");
+        EventListener.registerCommand("/invisible");
+        EventListener.registerCommand("/inv");
     }
 
     public static boolean isInvisibleClient(String username)

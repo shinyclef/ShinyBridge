@@ -3,6 +3,7 @@ package com.hotmail.shinyclef.shinybridge;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.util.Set;
 import java.util.logging.Level;
@@ -74,9 +75,6 @@ public class NetProtocolHelper extends NetProtocol
 
     public static void broadcastChat(String chatLine, String permission, boolean serverBroadcast)
     {
-        //convert permission to a rank and required level
-        Account.Rank requiredRank = MCServer.getRankFromPermission(permission);
-
         //for each client...
         String clientChat = "*" + chatLine;
         for (NetClientConnection client : NetClientConnection.getClientMap().values())
@@ -88,7 +86,7 @@ public class NetProtocolHelper extends NetProtocol
             }
 
             //only send if they have the required rank
-            if (client.getAccount().getClientPlayer().hasPermission(permission))
+            if (PermissionsEx.getUser(client.getAccount().getUserName()).has(permission))
             {
                 try
                 {

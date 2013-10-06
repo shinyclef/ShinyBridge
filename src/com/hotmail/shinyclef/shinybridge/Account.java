@@ -121,9 +121,8 @@ public class Account
         Account account = accountMap.get(lcUsername);
         String username = account.getUserName();
 
-        //set chat tag
-        String rankTag = MCServer.getColouredRankString(account.rank);
-        account.setChatTag(ChatColor.WHITE + "<" + rankTag + ChatColor.WHITE + username + "> ");
+        //set perm settings
+        account.refreshPermissionSettings();
 
         //attach account to the connection
         NetClientConnection.getClientMap().get(clientID).setAccount(account);
@@ -132,6 +131,10 @@ public class Account
         if (announce)
         {
             announceClientLoginToServer(username);
+        }
+        else
+        {
+            MCServer.pluginLog("Silent Login: " + username);
         }
 
         //set logged in values
@@ -159,6 +162,10 @@ public class Account
         if (announce)
         {
             announceClientLogoutToServer(userName);
+        }
+        else
+        {
+            MCServer.pluginLog("Silent Quit: " + userName);
         }
 
         //inform clients
@@ -252,14 +259,11 @@ public class Account
         passwordHash = newPasswordHash;
     }
 
-    public void setRank(Rank rank)
+    public void refreshPermissionSettings()
     {
-        this.rank = rank;
-    }
-
-    public void setChatTag(String chatTag)
-    {
-        this.chatTag = chatTag;
+        rank = MCServer.getRank(userName);
+        String chatRank = MCServer.getColouredRankString(MCServer.getChatRank(userName));
+        chatTag = ChatColor.WHITE + "<" + chatRank + ChatColor.WHITE + userName + "> ";
     }
 
     /* Getters */

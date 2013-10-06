@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -18,7 +19,7 @@ public class NetClientConnection
 {
     //static class vars
     private static int latestConnectionID = 0;
-    private static Map<Integer, NetClientConnection> clientMap = new HashMap<Integer, NetClientConnection>();
+    private static Map<Integer, NetClientConnection> clientMap = new HashMap<>();
     private static final int TIMEOUT_SECONDS = 30;
 
     //object vars
@@ -200,6 +201,4 @@ public class NetClientConnection
     {
         return readyToCloseSockets;
     }
-
-
 }
