@@ -43,6 +43,9 @@ public class CmdExecutor implements CommandExecutor
             /* Commands "register" and "changepassword" are in rPlusParser below. */
             switch (subCommand)
             {
+                case "commandlist":
+                    return commandList(sender);
+
                 case "help":
                     return showHelp(sender, args);
 
@@ -268,16 +271,59 @@ public class CmdExecutor implements CommandExecutor
                 " - Removes you RolyDPlus account. You can re-register at any time.");
         sender.sendMessage(ChatColor.AQUA + "changepassword [password]" + ChatColor.YELLOW +
                 " - Changes your RolyDPlus password to the given password.");
+        sender.sendMessage(ChatColor.AQUA + "commandlist" + ChatColor.YELLOW +
+                " - Displays a list of all server commands that work from RolyDPlus.");
 
         if (sender.hasPermission(MOD_PERM))
         {
             sender.sendMessage(ChatColor.DARK_RED + "Staff Commands:");
+            sender.sendMessage(ChatColor.AQUA + "invisible/inv" + ChatColor.YELLOW +
+                    " - Activate invisibility on your RolyDPlus account. This can be toggled from in game as well" +
+                    " as from the r+ client.");
+            sender.sendMessage(ChatColor.AQUA + "stop/start" + ChatColor.YELLOW +
+                    " - Stops or starts the RoylDPlus service. When stopped, all r+ users will be kicked and all " +
+                    "new r+ connections will be rejected.");
+            sender.sendMessage(ChatColor.AQUA + "scoreboard enable/disable" + ChatColor.YELLOW +
+                    " - Enables/disables scoreboard functionality. If disabled, (r+) users will not be displayed" +
+                    " on the server scoreboard (playerlist).");
+            sender.sendMessage(ChatColor.AQUA + "reloadcommandwhitelist" + ChatColor.YELLOW +
+                    " - Used after the command white list has been altered in the config file.");
+            sender.sendMessage(ChatColor.AQUA + "version" + ChatColor.YELLOW +
+                    " - View the current version of the RolyDPlus server as well as the minimum accepted version of" +
+                    " the RolyDPlus client.");
             sender.sendMessage(ChatColor.AQUA + "debug" + ChatColor.YELLOW +
                     " - Used to check for any errors with database operations. " +
                     "Check this if you think something is not working.");
-            sender.sendMessage(ChatColor.AQUA + "reloadcommandwhitelist" + ChatColor.YELLOW +
-                    " - Used after the command white list has been altered in the config file.");
         }
+        return true;
+    }
+
+    private boolean commandList(CommandSender sender)
+    {
+        sender.sendMessage(ChatColor.BLUE + "The following server commands are available for use from RolyDPlus:");
+        sender.sendMessage(ChatColor.AQUA + "msg, m, mm, r, me, busy, mail, money (/money and /money pay), " +
+                "whois, modreq, r+");
+
+        if (sender.hasPermission("rolyd.vip"))
+        {
+            sender.sendMessage(ChatColor.YELLOW + "VIP commands:");
+            sender.sendMessage(ChatColor.AQUA + "vip, feed");
+        }
+
+        if (sender.hasPermission("rolyd.exp"))
+        {
+            sender.sendMessage(ChatColor.DARK_AQUA + "Exp commands:");
+            sender.sendMessage(ChatColor.AQUA + "sb");
+        }
+
+        if (sender.hasPermission("rolyd.mod"))
+        {
+            sender.sendMessage(ChatColor.GREEN + "Mod commands:");
+            sender.sendMessage(ChatColor.AQUA + "mb, t, mbon/off, spy, inv, ban, tempban, unban, banip, mute, " +
+                    "unmute, mutelist, ip, baninfo, god, g, fly, gm, hk, check, claim, unclaim, done, modreq, " +
+                    "day, time, scoreboard, pex, version");
+        }
+
         return true;
     }
 

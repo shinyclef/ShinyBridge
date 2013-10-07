@@ -6,10 +6,11 @@ import org.bukkit.Server;
 import org.bukkit.configuration.Configuration;
 
 /**
- * User: Peter
+ * User: Shinyclef
  * Date: 6/10/13
  * Time: 4:57 PM
  */
+
 public abstract class AdaptedCommand
 {
     protected static ShinyBridge p = ShinyBridge.getPlugin();

@@ -107,6 +107,14 @@ public class NetProtocolHelper extends NetProtocol
         }
     }
 
+    public static void sendToClientPlayerIfOnline(String playerName, String message)
+    {
+        if (MCServer.isClientOnline(playerName))
+        {
+            NetProtocol.sendToClient(Account.getOnlineLcUsersClientMap().get(playerName.toLowerCase()), message, true);
+        }
+    }
+
     public static void loginRequest(int clientID, String[] args)
     {
         String version = args[1];

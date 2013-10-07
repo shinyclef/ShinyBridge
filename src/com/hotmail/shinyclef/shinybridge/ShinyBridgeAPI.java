@@ -23,10 +23,7 @@ public class ShinyBridgeAPI
 
     public void sendToClient(String playerName, String message)
     {
-        if (MCServer.isClientOnline(playerName))
-        {
-            NetProtocol.sendToClient(Account.getOnlineLcUsersClientMap().get(playerName.toLowerCase()), message, true);
-        }
+        NetProtocolHelper.sendToClientPlayerIfOnline(playerName, message);
     }
 
     public boolean isOnlineServerPlusClients(String playerName)

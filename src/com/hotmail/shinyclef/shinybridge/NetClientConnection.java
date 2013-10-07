@@ -81,7 +81,7 @@ public class NetClientConnection
     public void disconnectClient(String logReason)
     {
         //shut down in/out and remove client from map
-        //NetProtocolHelper.sendToClient(clientID, NetProtocol.POISON_PILL_OUT, false);
+        //NetProtocolHelper.sendToClientPlayerIfOnline(clientID, NetProtocol.POISON_PILL_OUT, false);
         if (ShinyBridge.DEV_BUILD)
         {
             MCServer.pluginLog("NetClientConnection.disconnectClient has started. " + clientID);

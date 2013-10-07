@@ -28,14 +28,12 @@ public class EventListener implements Listener, PermissionListener
 {
     private static EventListener instance;
     private ShinyBridge plugin;
-    private ShinyBaseAPI base;
     private Set<String> commandList;
 
-    public EventListener(ShinyBridge plugin, ShinyBaseAPI shinyBaseAPI)
+    public EventListener(ShinyBridge plugin)
     {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
-        this.base = shinyBaseAPI;
         instance = this;
         populateCommandList();
 
@@ -57,7 +55,6 @@ public class EventListener implements Listener, PermissionListener
 
     public static void registerCommand(String command)
     {
-
         if (instance.commandList == null)
         {
             instance.commandList = new HashSet<>();

@@ -24,6 +24,8 @@ public class NetProtocol
 
     public static final String QUIT_MESSAGE = CUSTOM_COMMAND_MARKER + "Disconnect";
     public static final String QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER = "Disconnect";
+    public static final String LOGOUT_MESSAGE = CUSTOM_COMMAND_MARKER + "Logout";
+    public static final String LOGOUT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER = "Logout";
     public static final String QUIT_MESSAGE_UNEXPECTED = QUIT_MESSAGE + ":Unexpected";
     public static final String POISON_PILL_OUT = CUSTOM_COMMAND_MARKER + "PoisonPill";
     public static final String COMMAND_UNAVAILABLE_FROM_RPLUS = ChatColor.RED +
@@ -146,6 +148,10 @@ public class NetProtocol
 
             case QUIT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER:
                 NetClientConnection.getClientMap().get(clientID).disconnectClient("Closing");
+                break;
+
+            case LOGOUT_MESSAGE_WITHOUT_CUSTOM_COMMAND_MARKER:
+                NetProtocolHelper.clientAccountLogout(clientID, "Logout");
                 break;
 
             case "RequestPlayerList":

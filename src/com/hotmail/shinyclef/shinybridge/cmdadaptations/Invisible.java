@@ -25,7 +25,7 @@ public class Invisible extends AdaptedCommand
     private static final String MOD_PERM = "rolyd.mod";
     private static List<String> invisibleClientUsersLc;
 
-    public static void initialise(ShinyBridge plugin)
+    public static void initialise()
     {
         invisibleClientUsersLc = new ArrayList<>();
         invisibleClientUsersLc = config.getStringList("InvisibleClientUsers");

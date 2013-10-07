@@ -4,14 +4,13 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.hotmail.shinyclef.shinybase.ShinyBase;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
-import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
-import com.hotmail.shinyclef.shinybridge.cmdadaptations.Money;
-import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
-import com.hotmail.shinyclef.shinybridge.cmdadaptations.Say;
+import com.hotmail.shinyclef.shinybridge.cmdadaptations.*;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -27,14 +26,15 @@ import java.util.logging.Logger;
 
 public class ShinyBridge extends JavaPlugin
 {
-    public static final boolean DEV_BUILD = true;
-    public static final String SERVER_VERSION = "1.0.3";
-    public static final String SUPPORTED_CLIENT_VERSION = "1.0.3";
+    public static final boolean DEV_BUILD = false;
+    public static final String SERVER_VERSION = "1.0.5";
+    public static final String SUPPORTED_CLIENT_VERSION = "1.0.5";
     private static int[] versionParts;
 
     private static ShinyBridge plugin;
     private static ShinyBridgeAPI shinyBridgeAPI;
     private static ShinyBaseAPI shinyBaseAPI;
+    private static Economy economy = null;
     private static ProtocolManager protocolManager;
     private static Logger log;
 
@@ -55,6 +55,13 @@ public class ShinyBridge extends JavaPlugin
         log = this.getLogger();
         boolean scoreboardEnabled = true;
 
+        //setup vault
+        //if no economy is found, disable this plugin with a message
+        if (!setupEconomy())
+        {
+            log.info("Warning! Vault not found! Disabling economy features!");
+        }
+
         //setup shinyBase
         Plugin base = Bukkit.getPluginManager().getPlugin("ShinyBase");
         if (base != null)
@@ -74,7 +81,7 @@ public class ShinyBridge extends JavaPlugin
         }
 
         //command executor and event listener
-        new EventListener(this, shinyBaseAPI);
+        new EventListener(this);
         CommandExecutor cmdExecutor = new CmdExecutor();
         getCommand("rolydplus").setExecutor(cmdExecutor);
 
@@ -99,9 +106,10 @@ public class ShinyBridge extends JavaPlugin
 
         //command components
         PreProcessParser.initialize(this, shinyBaseAPI);
-        Invisible.initialise(plugin);
+        Invisible.initialise();
         Say.initialize();
-        Money.initialize();
+        Money.initialize(economy);
+        Me.initialise();
 
         //start the services
         startAcceptingClients();
@@ -131,6 +139,18 @@ public class ShinyBridge extends JavaPlugin
             //already closed
         }
         acceptingConnections = false;
+    }
+
+    private boolean setupEconomy()
+    {
+        RegisteredServiceProvider<Economy> economyProvider =
+                getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (economyProvider != null)
+        {
+            economy = economyProvider.getProvider();
+        }
+
+        return (economy != null);
     }
 
     public void startAcceptingClients()
@@ -169,6 +189,11 @@ public class ShinyBridge extends JavaPlugin
     public ShinyBridgeAPI getShinyBridgeAPI()
     {
         return shinyBridgeAPI;
+    }
+
+    public static Economy getEconomy()
+    {
+        return economy;
     }
 
     public static int[] getVersion()

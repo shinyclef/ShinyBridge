@@ -27,7 +27,7 @@ public class PreProcessParser
 
     /* Handles PlayerCommandPreProcess events forwarded by the event listener in standard
     * Command Executor format (sender, command, args) with the event itself included. */
-    public static void parser(PlayerCommandPreprocessEvent e, final CommandSender sender,
+    public static void parser(final PlayerCommandPreprocessEvent e, final CommandSender sender,
                                         final String command, final String[] args)
     {
         /* ATTENTION! Commands must be in EventListener.commandList in order to not be ignored. */
@@ -55,6 +55,14 @@ public class PreProcessParser
 
             case "say":
                 Say.processSay(sender, args);
+                break;
+
+            case "me":
+                Me.processMe(sender, args);
+                break;
+
+            case "money":
+                Money.processMoney(e, sender, args);
                 break;
         }
     }
