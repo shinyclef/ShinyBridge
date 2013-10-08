@@ -86,6 +86,14 @@ public class Money extends AdaptedCommand
             targetLabel = targetPlayerName + "'s ";
         }
 
+        //make sure target has an account
+        if (!economy.hasAccount(targetPlayerName))
+        {
+            sender.sendMessage(MONEY_TAG + ChatColor.RED + "Account " + ChatColor.WHITE +
+                    targetPlayerName + ChatColor.RED + " does not exist.");
+            return;
+        }
+
         //get target's balance
         String balance = economy.format(economy.getBalance(targetPlayerName));
         sender.sendMessage(MONEY_TAG + targetLabel + "Balance: " + ChatColor.WHITE + balance);
