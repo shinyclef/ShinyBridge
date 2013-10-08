@@ -1,12 +1,11 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
-import com.hotmail.shinyclef.shinybridge.CmdExecutor;
-import com.hotmail.shinyclef.shinybridge.EventListener;
-import com.hotmail.shinyclef.shinybridge.NetProtocolHelper;
-import com.hotmail.shinyclef.shinybridge.ShinyBridge;
+import com.hotmail.shinyclef.shinybridge.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 
 /**
  * User: Shinyclef
@@ -23,7 +22,7 @@ public class Say extends AdaptedCommand
         EventListener.registerCommand("/say");
     }
 
-    public static void processSay(CommandSender sender, String[] args)
+    public static void processSay(PlayerCommandPreprocessEvent pc, CommandSender sender, String[] args)
     {
         //do nothing if sender is not a mod
         if (!sender.hasPermission(CmdExecutor.MOD_PERM))
@@ -35,7 +34,18 @@ public class Say extends AdaptedCommand
         String message = base.makeSentence(args, 0);
         String broadcastLine = SAY_COLOUR + "[Server] " + sender.getName() + ": " + message;
 
-        //broadcast it to clients
-        NetProtocolHelper.broadcastChat(broadcastLine, false);
+        if (sender instanceof MCServer.ClientPlayer)
+        {
+            //cancel command and broadcast everywhere
+            pc.setCancelled(true);
+            NetProtocolHelper.broadcastChat(broadcastLine, true);
+        }
+        else
+        {
+            //broadcast it to clients only
+            NetProtocolHelper.broadcastChat(broadcastLine, false);
+        }
+
+
     }
 }

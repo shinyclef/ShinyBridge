@@ -1,10 +1,12 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
+import be.Balor.Manager.Commands.Server.ServerCommand;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -27,8 +29,8 @@ public class PreProcessParser
 
     /* Handles PlayerCommandPreProcess events forwarded by the event listener in standard
     * Command Executor format (sender, command, args) with the event itself included. */
-    public static void parser(final PlayerCommandPreprocessEvent e, final CommandSender sender,
-                                        final String command, final String[] args)
+    public static void playerCommandParser(final PlayerCommandPreprocessEvent e, final CommandSender sender,
+                                           final String command, final String[] args)
     {
         /* ATTENTION! Commands must be in EventListener.commandList in order to not be ignored. */
 
@@ -54,15 +56,30 @@ public class PreProcessParser
                 break;
 
             case "say":
-                Say.processSay(sender, args);
+                Say.processSay(e, sender, args);
                 break;
 
             case "me":
-                Me.processMe(sender, args);
+                Me.processMe(e, sender, args);
                 break;
 
             case "money":
                 Money.processMoney(e, sender, args);
+                break;
+        }
+    }
+
+    /* Handles ServerCommand events forwarded by the event listener in standard
+    * Command Executor format (sender, command, args) with the event itself included. */
+    public static void consoleCommandParser(final ServerCommandEvent e, final CommandSender sender,
+                                            final String command, final String[] args)
+    {
+        /* ATTENTION! Commands must be in EventListener.commandList in order to not be ignored. */
+
+        switch (command.substring(1).toLowerCase())
+        {
+            case "say":
+                Say.processSay(null, sender, args);
                 break;
         }
     }

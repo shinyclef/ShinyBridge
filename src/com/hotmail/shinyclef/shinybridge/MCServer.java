@@ -1739,4 +1739,9 @@ public class MCServer extends ShinyBridge
     {
         return commandWhiteList;
     }
+
+    public static Server getS()
+    {
+        return s;
+    }
 }

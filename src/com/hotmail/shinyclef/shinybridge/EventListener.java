@@ -2,7 +2,6 @@ package com.hotmail.shinyclef.shinybridge;
 
 import com.hotmail.shinyclef.shinybase.PermissionListener;
 import com.hotmail.shinyclef.shinybase.PermissionsChangeManager;
-import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.Invisible;
 import com.hotmail.shinyclef.shinybridge.cmdadaptations.PreProcessParser;
 import org.bukkit.Bukkit;
@@ -118,7 +117,6 @@ public class EventListener implements Listener, PermissionListener
     public void eventPlayerCommandPreprocess(PlayerCommandPreprocessEvent e)
     {
         final String message = e.getMessage().trim();
-        String lcMessage = message.toLowerCase();
 
         //setup args string and command
         String command;
@@ -138,7 +136,7 @@ public class EventListener implements Listener, PermissionListener
         boolean relevantCommandFound = false;
         for (String com : commandList)
         {
-            if (command.equals(com))
+            if (command.toLowerCase().equals(com))
             {
                 relevantCommandFound = true;
             }
@@ -164,7 +162,59 @@ public class EventListener implements Listener, PermissionListener
         }
 
         //send all our data to be parsed
-        PreProcessParser.parser(e, sender, command, args);
+        PreProcessParser.playerCommandParser(e, sender, command, args);
+    }
+
+    @EventHandler
+    public void eventServerCommand(ServerCommandEvent e)
+    {
+        final String message = "/" + e.getCommand().trim();
+
+        //setup args string and command
+        String command;
+        String argsString;
+        if (message.contains(" "))
+        {
+            command = message.substring(0, message.indexOf(" "));
+            argsString = message.substring(message.indexOf(" ") + 1);
+        }
+        else
+        {
+            command = message;
+            argsString = "";
+        }
+
+        //filter command and aliases
+        boolean relevantCommandFound = false;
+        for (String com : commandList)
+        {
+            if (command.toLowerCase().equals(com))
+            {
+                relevantCommandFound = true;
+            }
+        }
+
+        if (!relevantCommandFound)
+        {
+            return;
+        }
+
+        //setup sender command and sender
+        CommandSender sender = MCServer.getS().getConsoleSender();
+
+        //convert the args string to args array
+        String [] args;
+        if (!argsString.equals(""))
+        {
+            args = argsString.split(" ");
+        }
+        else
+        {
+            args = new String[0];
+        }
+
+        //send all our data to be parsed
+        PreProcessParser.consoleCommandParser(e, sender, command, args);
     }
 
     @EventHandler (priority = EventPriority.MONITOR)

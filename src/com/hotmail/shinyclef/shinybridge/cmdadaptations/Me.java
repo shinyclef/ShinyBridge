@@ -1,8 +1,10 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
 import com.hotmail.shinyclef.shinybridge.EventListener;
+import com.hotmail.shinyclef.shinybridge.MCServer;
 import com.hotmail.shinyclef.shinybridge.NetProtocolHelper;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 /**
  * User: Shinyclef
@@ -17,7 +19,7 @@ public class Me extends AdaptedCommand
         EventListener.registerCommand("/me");
     }
 
-    public static void processMe(CommandSender sender, String[] args)
+    public static void processMe(PlayerCommandPreprocessEvent e, CommandSender sender, String[] args)
     {
         /* we must forward on a successful /me message to all clients */
 
@@ -31,7 +33,16 @@ public class Me extends AdaptedCommand
         String sentence = base.makeSentence(args, 0);
         String line = "* " + sender.getName() + " " + sentence;
 
-        //send it to all clients
-        NetProtocolHelper.broadcastChat(line, false);
+        //if this command is coming from a client, we need to handle it ourselves to prevent errors
+        if (sender instanceof MCServer.ClientPlayer)
+        {
+            e.setCancelled(true);
+            NetProtocolHelper.broadcastChat(line, true);
+        }
+        else
+        {
+            //It's from the server, send it to all clients
+            NetProtocolHelper.broadcastChat(line, false);
+        }
     }
 }
