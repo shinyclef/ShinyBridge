@@ -1,11 +1,9 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
-import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.*;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 
 /**
  * User: Shinyclef
@@ -19,7 +17,7 @@ public class Say extends AdaptedCommand
 
     public static void initialize()
     {
-        EventListener.registerCommand("/say");
+       registerCommand("/say");
     }
 
     public static void processSay(PlayerCommandPreprocessEvent pc, CommandSender sender, String[] args)

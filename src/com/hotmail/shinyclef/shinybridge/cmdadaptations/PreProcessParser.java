@@ -1,8 +1,8 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
-import be.Balor.Manager.Commands.Server.ServerCommand;
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
 import com.hotmail.shinyclef.shinybridge.*;
+import com.sun.javafx.sg.PGShape;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -65,6 +65,18 @@ public class PreProcessParser
 
             case "money":
                 Money.processMoney(e, sender, args);
+                break;
+
+            case "modreq":
+                Modreq.processModreq(sender, args);
+                break;
+
+            case "claim":
+                Modreq.processClaim(sender, args);
+                break;
+
+            case "done":
+                Modreq.processDone(sender, args);
                 break;
         }
     }

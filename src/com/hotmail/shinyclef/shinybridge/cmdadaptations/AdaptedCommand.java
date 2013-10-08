@@ -1,6 +1,7 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
 import com.hotmail.shinyclef.shinybase.ShinyBaseAPI;
+import com.hotmail.shinyclef.shinybridge.EventListener;
 import com.hotmail.shinyclef.shinybridge.ShinyBridge;
 import org.bukkit.Server;
 import org.bukkit.configuration.Configuration;
@@ -17,4 +18,19 @@ public abstract class AdaptedCommand
     protected static Server s = p.getServer();
     protected static ShinyBaseAPI base = p.getShinyBaseAPI();
     protected static Configuration config = p.getConfig();
+
+    public static void initialize()
+    {
+        PreProcessParser.initialize(p, p.getShinyBaseAPI());
+        Invisible.initialise();
+        Me.initialise();
+        Modreq.initialize();
+        Money.initialize(p.getEconomy());
+        Say.initialize();
+    }
+
+    protected static void registerCommand(String command)
+    {
+        EventListener.registerCommand(command);
+    }
 }

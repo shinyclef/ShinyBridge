@@ -105,11 +105,7 @@ public class ShinyBridge extends JavaPlugin
         ScoreboardManager.initialise(this, protocolManager, teamsFile, scoreboardEnabled);
 
         //command components
-        PreProcessParser.initialize(this, shinyBaseAPI);
-        Invisible.initialise();
-        Say.initialize();
-        Money.initialize(economy);
-        Me.initialise();
+        AdaptedCommand.initialize();
 
         //start the services
         startAcceptingClients();
@@ -191,7 +187,7 @@ public class ShinyBridge extends JavaPlugin
         return shinyBridgeAPI;
     }
 
-    public static Economy getEconomy()
+    public Economy getEconomy()
     {
         return economy;
     }

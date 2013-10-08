@@ -1,6 +1,5 @@
 package com.hotmail.shinyclef.shinybridge.cmdadaptations;
 
-import com.hotmail.shinyclef.shinybridge.EventListener;
 import com.hotmail.shinyclef.shinybridge.MCServer;
 import com.hotmail.shinyclef.shinybridge.NetProtocolHelper;
 import org.bukkit.command.CommandSender;
@@ -16,7 +15,7 @@ public class Me extends AdaptedCommand
 {
     public static void initialise()
     {
-        EventListener.registerCommand("/me");
+        registerCommand("/me");
     }
 
     public static void processMe(PlayerCommandPreprocessEvent e, CommandSender sender, String[] args)

@@ -12,10 +12,10 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
  * Time: 4:56 PM
  */
 
-public class Money
+public class Money extends AdaptedCommand
 {
     private static Economy economy;
-    private static final String MONEYTAG = ChatColor.DARK_GREEN + "[" + ChatColor.WHITE + "Money" +
+    private static final String MONEY_TAG = ChatColor.DARK_GREEN + "[" + ChatColor.WHITE + "Money" +
             ChatColor.DARK_GREEN + "] ";
 
     public static void initialize(Economy economy)
@@ -23,7 +23,7 @@ public class Money
         Money.economy = economy;
         if (economy != null)
         {
-            EventListener.registerCommand("/money");
+            registerCommand("/money");
         }
     }
 
@@ -88,7 +88,7 @@ public class Money
 
         //get target's balance
         String balance = economy.format(economy.getBalance(targetPlayerName));
-        sender.sendMessage(MONEYTAG + targetLabel + "Balance: " + ChatColor.WHITE + balance);
+        sender.sendMessage(MONEY_TAG + targetLabel + "Balance: " + ChatColor.WHITE + balance);
     }
 
     public static void pay(PlayerCommandPreprocessEvent e, CommandSender sender, String[] args)
@@ -123,7 +123,7 @@ public class Money
         }
 
         //we're all clear, make it happen
-        NetProtocolHelper.sendToClientPlayerIfOnline(recipient, MONEYTAG + ChatColor.WHITE + sender.getName() +
+        NetProtocolHelper.sendToClientPlayerIfOnline(recipient, MONEY_TAG + ChatColor.WHITE + sender.getName() +
                 ChatColor.DARK_GREEN + " has sent you " + ChatColor.WHITE + economy.format(amount) +
                 ChatColor.DARK_GREEN + ".");
     }

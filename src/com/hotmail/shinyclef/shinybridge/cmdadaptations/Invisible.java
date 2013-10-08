@@ -5,9 +5,7 @@ import be.Balor.Tools.Type;
 import com.hotmail.shinyclef.shinybridge.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -29,8 +27,8 @@ public class Invisible extends AdaptedCommand
     {
         invisibleClientUsersLc = new ArrayList<>();
         invisibleClientUsersLc = config.getStringList("InvisibleClientUsers");
-        EventListener.registerCommand("/invisible");
-        EventListener.registerCommand("/inv");
+        registerCommand("/invisible");
+        registerCommand("/inv");
     }
 
     public static boolean isInvisibleClient(String username)
