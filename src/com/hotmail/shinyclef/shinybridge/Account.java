@@ -154,6 +154,7 @@ public class Account
 
     public void logout(boolean announce)
     {
+        NetClientConnection.getClientMap().get(assignedClientID).setAccount(null);
         assignedClientID = null;
         isOnline = false;
         onlineLcUsersClientMap.remove(userNameLC);
