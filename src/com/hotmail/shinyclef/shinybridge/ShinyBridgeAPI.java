@@ -16,6 +16,11 @@ public class ShinyBridgeAPI
 {
     private static Server server = ShinyBridge.getPlugin().getServer();
 
+    public void broadcastMessage(String chatLine, boolean serverBroadcast)
+    {
+        NetProtocolHelper.broadcastChat(chatLine, serverBroadcast);
+    }
+
     public void broadcastMessage(String chatLine, String permission, boolean serverBroadcast)
     {
         NetProtocolHelper.broadcastChat(chatLine, permission, serverBroadcast);
