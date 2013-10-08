@@ -82,7 +82,14 @@ public class EventListener implements Listener, PermissionListener
         NetProtocolHelper.informClientsOnPlayerStatusChange(playerName);
         if (!Invisible.isInvisibleServer(playerName))
         {
-            NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(playerName, "Server", "Join");
+            if (e.getPlayer().hasPlayedBefore())
+            {
+                NetProtocolHelper.broadcastOnlineChangeMessageToClientsIfVisible(playerName, "Server", "Join");
+            }
+            else
+            {
+                NetProtocolHelper.broadcastFirstTimeServerJoinMessageToClients(playerName);
+            }
         }
     }
 

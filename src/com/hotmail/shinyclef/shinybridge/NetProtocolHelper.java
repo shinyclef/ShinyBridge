@@ -256,8 +256,13 @@ public class NetProtocolHelper extends NetProtocol
             direction = "left";
         }
 
-
         broadcastChat(ChatColor.WHITE + playerName + ChatColor.YELLOW + " " + direction + " " + location + "!", false);
+    }
+
+    public static void broadcastFirstTimeServerJoinMessageToClients(String playerName)
+    {
+        broadcastChat(ChatColor.WHITE + playerName + ChatColor.YELLOW + " joined the game " + ChatColor.GOLD +
+                "for the first time!", false);
     }
 
     public static String getOnlineLocationsCode(String playerName)
