@@ -222,7 +222,7 @@ public class ScoreboardManager
         String nameRemainder = playerName.substring(1);
 
         //colour of the scoreboard team/name
-        String rankColour = MCServer.getRankColour(Account.getAccountMap().get(playerName.toLowerCase()).getRank());
+        String rankColour = Account.getAccountMap().get(playerName.toLowerCase()).getRank().colour + "";
 
         //create prefix consisting of rankColour and firstLetter, and r+ suffix
         String prefix = rankColour + firstLetter;

@@ -46,22 +46,21 @@ public class Account
 
     public enum Rank
     {
-        GM(5),
-        MOD(4),
-        EXPERT(3),
-        VIP(2),
-        STANDARD(1);
+        GM(5, 'g', ChatColor.RED),
+        MOD(4, 'm', ChatColor.GREEN),
+        EXPERT(3, 'e', ChatColor.AQUA),
+        VIP(2,  'v', ChatColor.DARK_PURPLE),
+        STANDARD(1, 's', ChatColor.WHITE);
 
-        private final int level;
+        public final int level;
+        public final ChatColor colour;
+        public final char charCode;
 
-        Rank(int level)
+        Rank(int level, char charCode, ChatColor colour)
         {
             this.level = level;
-        }
-
-        public int getLevel()
-        {
-            return level;
+            this.colour = colour;
+            this.charCode = charCode;
         }
     }
 
@@ -233,7 +232,7 @@ public class Account
 
     public boolean hasPermission(Rank requiredRank)
     {
-        return rank.getLevel() >= requiredRank.getLevel();
+        return rank.level >= requiredRank.level;
     }
 
     public void assignNewClientPlayer()

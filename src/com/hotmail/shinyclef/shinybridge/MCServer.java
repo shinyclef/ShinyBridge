@@ -254,51 +254,21 @@ public class MCServer extends ShinyBridge
 
     public static String getColouredRankString(Account.Rank rank)
     {
-        String rankColour = getRankColour(rank);
-
         switch (rank)
         {
             case GM:
-                return rankColour + "[GM] ";
+                return Account.Rank.GM.colour + "[GM] ";
 
             case MOD:
-                return rankColour + "[Mod] ";
+                return Account.Rank.MOD.colour + "[Mod] ";
 
             case EXPERT:
-                return rankColour + "[Exp] ";
+                return Account.Rank.EXPERT.colour + "[Exp] ";
 
             case VIP:
-                return rankColour + "[VIP] ";
+                return Account.Rank.VIP.colour + "[VIP] ";
 
             default:
-                return "";
-        }
-    }
-
-    public static String getRankColour(Account.Rank rank)
-    {
-        switch (rank)
-        {
-            case GM:
-                return ChatColor.RED + "";
-
-            case MOD:
-                return ChatColor.GREEN + "";
-
-            case EXPERT:
-                return ChatColor.AQUA + "";
-
-            case VIP:
-                return ChatColor.DARK_PURPLE + "";
-
-            case STANDARD:
-                return "";
-
-            default:
-                if (ShinyBridge.DEV_BUILD)
-                {
-                    pluginLog("WARNING! Default case triggered in MCServer.getRankColour.");
-                }
                 return "";
         }
     }
