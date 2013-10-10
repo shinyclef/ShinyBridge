@@ -307,7 +307,7 @@ public class CmdExecutor implements CommandExecutor
         if (sender.hasPermission("rolyd.vip"))
         {
             sender.sendMessage(ChatColor.YELLOW + "VIP commands:");
-            sender.sendMessage(ChatColor.AQUA + "vip, feed");
+            sender.sendMessage(ChatColor.AQUA + "vip, feed, raffle/raf");
         }
 
         if (sender.hasPermission("rolyd.exp"))
