@@ -47,7 +47,7 @@ public class CmdExecutor implements CommandExecutor
                     return commandList(sender);
 
                 case "help":
-                    return showHelp(sender, args);
+                    return showHelp(sender);
 
                 case "unregister":
                     return unregister(sender, args);
@@ -262,7 +262,7 @@ public class CmdExecutor implements CommandExecutor
 
     }
 
-    private boolean showHelp(CommandSender sender, String[] args)
+    private boolean showHelp(CommandSender sender)
     {
         sender.sendMessage(ChatColor.BLUE + "Commands are accessible with /RolyDPlus, /rplus, or /r+. Eg. '/r+ help'.");
         sender.sendMessage(ChatColor.AQUA + "register [password]" + ChatColor.YELLOW +
