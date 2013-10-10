@@ -46,21 +46,21 @@ public class Account
 
     public enum Rank
     {
-        GM(5, 'g', ChatColor.RED),
-        MOD(4, 'm', ChatColor.GREEN),
-        EXPERT(3, 'e', ChatColor.AQUA),
-        VIP(2,  'v', ChatColor.DARK_PURPLE),
-        STANDARD(1, 's', ChatColor.WHITE);
+        GM(5, ChatColor.RED),
+        MOD(4, ChatColor.GREEN),
+        EXPERT(3, ChatColor.AQUA),
+        VIP(2, ChatColor.DARK_PURPLE),
+        STANDARD(1, ChatColor.WHITE);
 
         public final int level;
         public final ChatColor colour;
-        public final char charCode;
+        public final char colourCode;
 
-        Rank(int level, char charCode, ChatColor colour)
+        Rank(int level, ChatColor colour)
         {
             this.level = level;
             this.colour = colour;
-            this.charCode = charCode;
+            this.colourCode = colour.getChar();
         }
     }
 

@@ -28,6 +28,7 @@ public class NetProtocolHelper extends NetProtocol
     public static final String OUT_OF_DATE = "Incorrect:OutOfDate";
     public static final String DUPLICATE = "Duplicate";
 
+
     public static void broadcastRawToClients(String message, boolean isChat)
     {
         for (NetClientConnection client : NetClientConnection.getClientMap().values())
@@ -113,6 +114,11 @@ public class NetProtocolHelper extends NetProtocol
         {
             NetProtocol.sendToClient(Account.getOnlineLcUsersClientMap().get(playerName.toLowerCase()), message, true);
         }
+    }
+
+    public static void sendServerVersion(int clientID)
+    {
+        sendToClient(clientID, SERVER_VERSION + ":" + ShinyBridge.SERVER_VERSION, false);
     }
 
     public static void loginRequest(int clientID, String[] args)
@@ -224,13 +230,13 @@ public class NetProtocolHelper extends NetProtocol
         sendToClient(clientID, QUIT_MESSAGE + ":" + typeInfo + ":" + reason, false);
     }
 
-    /* @location: Server/Client
-    *  @type:     Join/Quit/Invisible/Visible */
+    /* Format: online locations, invisible locations, display colour */
     public static void informClientsOnPlayerStatusChange(String playerName)
     {
         broadcastRawToClients("@StatusChange:" + playerName + ":" +
                 NetProtocolHelper.getOnlineLocationsCode(playerName) +
-                NetProtocolHelper.getInvisibleLocationsCode(playerName), false);
+                NetProtocolHelper.getInvisibleLocationsCode(playerName) +
+                MCServer.getChatRank(playerName).colourCode, false);
     }
 
     public static void broadcastOnlineChangeMessageToClientsIfVisible(String playerName,

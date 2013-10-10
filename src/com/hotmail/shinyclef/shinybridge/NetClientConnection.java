@@ -39,7 +39,7 @@ public class NetClientConnection
     /* Constructor */
     public NetClientConnection(Socket socket)
     {
-        //initialise variables
+        //initialize variables
         this.socket = socket;
         latestConnectionID++;
         clientID = latestConnectionID;
@@ -134,19 +134,43 @@ public class NetClientConnection
         clientVer[1] = Integer.parseInt(verString[1]);
         clientVer[2] = Integer.parseInt(verString[2]);
 
-        if (serverVer[0] > clientVer[0])
+        if (serverVer[0] != clientVer[0])
         {
-            return false;
+            if (serverVer[0] > clientVer[0])
+            {
+                return false;
+            }
+
+            if (serverVer[0] < clientVer[0])
+            {
+                return true;
+            }
         }
 
-        if (serverVer[1] > clientVer[1])
+        if (serverVer[1] != clientVer[1])
         {
-            return false;
+            if (serverVer[1] > clientVer[1])
+            {
+                return false;
+            }
+
+            if (serverVer[1] < clientVer[1])
+            {
+                return true;
+            }
         }
 
-        if (serverVer[2] > clientVer[2])
+        if (serverVer[2] != clientVer[2])
         {
-            return false;
+            if (serverVer[2] > clientVer[2])
+            {
+                return false;
+            }
+
+            if (serverVer[2] < clientVer[2])
+            {
+                return true;
+            }
         }
 
         return true;

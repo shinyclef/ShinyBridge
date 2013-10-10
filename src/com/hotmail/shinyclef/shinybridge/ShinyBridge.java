@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 public class ShinyBridge extends JavaPlugin
 {
     public static final boolean DEV_BUILD = false;
-    public static final String SERVER_VERSION = "1.0.5";
-    public static final String SUPPORTED_CLIENT_VERSION = "1.0.5";
+    public static final String SERVER_VERSION = "1.1.0";
+    public static final String MINIMUM_CLIENT_VERSION = "1.1.0";
     private static int[] versionParts;
 
     private static ShinyBridge plugin;
@@ -46,7 +46,7 @@ public class ShinyBridge extends JavaPlugin
     {
         //assign variables
         versionParts = new int[3];
-        String[] versionStrings = SUPPORTED_CLIENT_VERSION.split("\\.");
+        String[] versionStrings = MINIMUM_CLIENT_VERSION.split("\\.");
         versionParts[0] = Integer.parseInt(versionStrings[0]);
         versionParts[1] = Integer.parseInt(versionStrings[1]);
         versionParts[2] = Integer.parseInt(versionStrings[2]);
@@ -105,7 +105,7 @@ public class ShinyBridge extends JavaPlugin
         ScoreboardManager.initialise(this, protocolManager, teamsFile, scoreboardEnabled);
 
         //command components
-        AdaptedCommand.initialize();
+        AdaptedCommand.initializeCommands();
 
         //start the services
         startAcceptingClients();

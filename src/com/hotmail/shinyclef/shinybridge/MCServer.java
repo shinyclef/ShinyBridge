@@ -301,7 +301,8 @@ public class MCServer extends ShinyBridge
     }
 
     /* 'B' logged in both, 'S' server only, 'C' client only, 'N' none, '.' to separate special chars with name
-     * eg. First char upper case shows online locations, second char lower case show invisible locations */
+     * eg. First char upper case shows online locations, second char lower case show invisible locations
+      *    third character is the chat colour char. */
     public static Set<String> getAllOnlinePlayerFormattedNamesSet()
     {
         //get server players set and logged in clients set
@@ -322,8 +323,9 @@ public class MCServer extends ShinyBridge
         {
             String onlineLocations = NetProtocolHelper.getOnlineLocationsCode(playerName);
             String invisibleLocations = NetProtocolHelper.getInvisibleLocationsCode(playerName);
+            char colourChar = MCServer.getChatRank(playerName).colourCode;
 
-            String newEntry = onlineLocations + invisibleLocations + "." + playerName;
+            String newEntry = onlineLocations + invisibleLocations + colourChar + "." + playerName;
             masterSet.remove(playerName);
             masterSet.add(newEntry);
         }
