@@ -23,7 +23,7 @@ public class Invisible extends AdaptedCommand
     private static final String MOD_PERM = "rolyd.mod";
     private static List<String> invisibleClientUsersLc;
 
-    public static void initialise()
+    public static void initialize()
     {
         invisibleClientUsersLc = new ArrayList<>();
         invisibleClientUsersLc = config.getStringList("InvisibleClientUsers");

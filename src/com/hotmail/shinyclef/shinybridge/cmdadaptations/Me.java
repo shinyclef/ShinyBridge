@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 public class Me extends AdaptedCommand
 {
-    public static void initialise()
+    public static void initialize()
     {
         registerCommand("/me");
     }

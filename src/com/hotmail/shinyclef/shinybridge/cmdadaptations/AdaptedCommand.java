@@ -14,18 +14,23 @@ import org.bukkit.configuration.Configuration;
 
 public abstract class AdaptedCommand
 {
+    protected static final String MOD_PERM = "rolyd.mod";
+
     protected static ShinyBridge p = ShinyBridge.getPlugin();
     protected static Server s = p.getServer();
     protected static ShinyBaseAPI base = p.getShinyBaseAPI();
     protected static Configuration config = p.getConfig();
 
-    public static void initialize()
+
+    public static void initializeCommands()
     {
         PreProcessParser.initialize(p, p.getShinyBaseAPI());
-        Invisible.initialise();
-        Me.initialise();
+        Ban.initialize();
+        Invisible.initialize();
+        Me.initialize();
         Modreq.initialize();
         Money.initialize(p.getEconomy());
+        Raffle.initialize();
         Say.initialize();
     }
 
