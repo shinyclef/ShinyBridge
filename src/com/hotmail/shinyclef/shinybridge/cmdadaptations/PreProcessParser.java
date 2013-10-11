@@ -80,6 +80,10 @@ public class PreProcessParser
             case "raffle": case "raf":
                 Raffle.rafflePreprocess(e, sender, args);
                 break;
+
+            case "gm":
+                GM.processGM(e, sender, args);
+                break;
         }
     }
 

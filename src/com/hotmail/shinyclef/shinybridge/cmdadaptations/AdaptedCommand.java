@@ -26,6 +26,7 @@ public abstract class AdaptedCommand
     {
         PreProcessParser.initialize(p, p.getShinyBaseAPI());
         Ban.initialize();
+        GM.initialize();
         Invisible.initialize();
         Me.initialize();
         Modreq.initialize();
