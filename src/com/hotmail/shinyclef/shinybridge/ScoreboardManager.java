@@ -42,6 +42,8 @@ public class ScoreboardManager
     private static Map<String, PacketContainer> onlineTeamAndPacketMap;
     //(String fullName, PacketContainer onlinePacket)
 
+    private static final String SCOREBOARD_SUFFIX = ChatColor.GRAY + "+";
+
     public static void initialise(ShinyBridge plugin, ProtocolManager protocolManager,
                                   File teamsFile, boolean scoreboardEnabled)
     {
@@ -226,7 +228,7 @@ public class ScoreboardManager
 
         //create prefix consisting of rankColour and firstLetter, and r+ suffix
         String prefix = rankColour + firstLetter;
-        String suffix = (ChatColor.GRAY + "" + "(r+)");
+        String suffix = SCOREBOARD_SUFFIX;
 
         //prepare the the team
         Team team = scoreboard.getTeam(nameRemainder);
