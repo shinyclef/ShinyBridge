@@ -20,7 +20,7 @@ public class NetClientConnection
     //static class vars
     private static int latestConnectionID = 0;
     private static Map<Integer, NetClientConnection> clientMap = new HashMap<>();
-    private static final int TIMEOUT_SECONDS = 30;
+    private static final int TIMEOUT_SECONDS = 40;
 
     //object vars
     private final Socket socket;
